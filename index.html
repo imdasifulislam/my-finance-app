@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Finance App</title>
   
+  <!-- PWA Meta Tags & Manifest -->
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22My%20Finance%20App%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2Fmy-finance-app%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f7f6%22%2C%22theme_color%22%3A%22%23007bff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <meta name="theme-color" content="#007bff">
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
@@ -81,6 +85,14 @@
   <div id="root">
     <h3 style="text-align: center; margin-top: 50px; color: #666;">লোডিং...</h3>
   </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
+      });
+    }
+  </script>
 
   <script type="text/babel">
     function SwipeableTransaction({ tx, onDelete }) {
@@ -198,7 +210,7 @@
       const walletBalances = { 'Bkash': 0, 'Nagad': 0, 'Cash': 0, 'Bank': 0 };
       let totalIncome = 0; 
       let totalExpense = 0;
-      const expenseByCategory = {}; // রিপোর্ট তৈরির জন্য
+      const expenseByCategory = {};
 
       transactions.forEach(t => {
         if(t.type === 'income') {
@@ -215,8 +227,6 @@
       });
       
       const balance = totalIncome - totalExpense;
-      
-      // খরচ অনুযায়ী ক্যাটাগরিগুলো বড় থেকে ছোট সাজানো
       const sortedExpenses = Object.entries(expenseByCategory).sort((a, b) => b[1] - a[1]);
 
       const handleEntryChange = (index, field, value) => {
