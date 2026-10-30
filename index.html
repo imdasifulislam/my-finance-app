@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Finance App</title>
   
-  <!-- PWA Meta Tags & Manifest -->
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22My%20Finance%20App%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2Fmy-finance-app%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f7f6%22%2C%22theme_color%22%3A%22%23007bff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <!-- PWA Manifest & Meta -->
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22My%20Finance%20App%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f7f6%22%2C%22theme_color%22%3A%22%23007bff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
   <meta name="theme-color" content="#007bff">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
@@ -42,7 +42,6 @@
     .wallet-card h4 { font-size: 14px; opacity: 0.9; margin-bottom: 5px; font-weight: normal; }
     .wallet-card h3 { font-size: 18px; }
 
-    /* Category Progress Bars */
     .category-report { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .cat-bar-container { margin-bottom: 12px; }
     .cat-bar-container:last-child { margin-bottom: 0; }
@@ -78,6 +77,10 @@
     .btn-add-tx { position: relative; top: -20px; background-color: #007bff !important; color: white !important; width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4); flex: none !important; margin: 0 auto; }
     .btn-add-tx .material-icons { font-size: 32px; }
     .btn-add-tx:active { transform: scale(0.95); }
+
+    /* Install Banner Style */
+    .install-banner { background: #28a745; color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .install-btn { background: white; color: #28a745; border: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -92,6 +95,14 @@
         navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
       });
     }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('pwa-install-banner');
+      if (installBtn) installBtn.style.display = 'flex';
+    });
   </script>
 
   <script type="text/babel">
@@ -192,6 +203,20 @@
       React.useEffect(() => {
         localStorage.setItem('my_finance_data', JSON.stringify(transactions));
       }, [transactions]);
+
+      const handleInstallClick = () => {
+        if (window.deferredPrompt) {
+          window.deferredPrompt.prompt();
+          window.deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+            }
+            window.deferredPrompt = null;
+          });
+        } else {
+          alert('ব্রাউজারের মেনু (৩ ডট) থেকে "Add to Home screen" সিলেক্ট করে অ্যাপটি ইনস্টল করে নিন!');
+        }
+      };
 
       const getTodayDate = () => {
         const now = new Date();
@@ -297,6 +322,19 @@
           <main className="content">
             {activeTab === 'home' && (
               <div>
+                <!-- Install App Banner (Initially Hidden) -->
+                <div id="pwa-install-banner" className="install-banner" style={{ display: 'none' }}>
+                  <span>📱 হোমস্ক্রিনে অ্যাপটি ইনস্টল করুন!</span>
+                  <button className="install-btn" onClick={() => {
+                    if (window.deferredPrompt) {
+                      window.deferredPrompt.prompt();
+                      window.deferredPrompt.userChoice.then((choiceResult) => {
+                        window.deferredPrompt = null;
+                      });
+                    }
+                  }}>ইনস্টল</button>
+                </div>
+
                 <div className="summary-card">
                   <h3>মোট ব্যালেন্স</h3>
                   <h2>৳ {balance.toLocaleString()}</h2>
@@ -454,6 +492,13 @@
     }
 
     ReactDOM.render(<App />, document.getElementById('root'));
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'flex';
+    });
   </script>
 
 </body>
