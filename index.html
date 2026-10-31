@@ -189,6 +189,18 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+        // অফলাইন ডেটা ক্যাশ এনাবল করার জন্য
+    db.enablePersistence()
+      .catch((err) => {
+          if (err.code == 'failed-precondition') {
+              // একাধিক ট্যাব একসাথে খোলা থাকলে এই এরর আসতে পারে
+              console.log('Persistence failed: Multiple tabs open');
+          } else if (err.code == 'unimplemented') {
+              // ব্রাউজার সাপোর্ট না করলে
+              console.log('Persistence is not available on this browser');
+          }
+      });
+
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
