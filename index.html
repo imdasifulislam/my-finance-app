@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ArthoGrow - Personal Finance</title>
   
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22ArthoGrow%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F6F8F7%22%2C%22theme_color%22%3A%22%2316845B%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22ArthoGrow%22%2C%22short_name%22%3A%22ArthoGrow%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F6F8F7%22%2C%22theme_color%22%3A%22%2316845B%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F192%2Fwallet.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any maskable%22%7D%5D%7D">
   <meta name="theme-color" content="#16845B">
 
   <!-- React & Babel Production CDNs -->
@@ -112,7 +112,6 @@
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(16, 42, 67, 0.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
     .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(16, 42, 67, 0.15); border: 1px solid #E5EBE7; }
 
-    /* Loading Animation Styles */
     @keyframes pulseGlow {
       0% { opacity: 0.6; transform: scale(0.98); }
       50% { opacity: 1; transform: scale(1); }
@@ -189,22 +188,37 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-        // অফলাইন ডেটা ক্যাশ এনাবল করার জন্য
-    db.enablePersistence()
-      .catch((err) => {
-          if (err.code == 'failed-precondition') {
-              // একাধিক ট্যাব একসাথে খোলা থাকলে এই এরর আসতে পারে
-              console.log('Persistence failed: Multiple tabs open');
-          } else if (err.code == 'unimplemented') {
-              // ব্রাউজার সাপোর্ট না করলে
-              console.log('Persistence is not available on this browser');
-          }
-      });
 
+    // Firestore Offline Persistence Enable
+    db.enablePersistence().catch((err) => {
+      console.log("Offline persistence error: ", err.code);
+    });
 
+    // PWA Service Worker Registration for Offline Support & App Installation
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
+        const swCode = `
+          self.addEventListener('install', (e) => {
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(clients.claim());
+          });
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(
+              fetch(e.request).catch(() => {
+                return caches.match(e.request);
+              })
+            );
+          });
+        `;
+        const blob = new Blob([swCode], { type: 'text/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).then(() => {
+          console.log('ServiceWorker registered successfully.');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
       });
     }
   </script>
@@ -308,7 +322,6 @@
       const [editingItem, setEditingItem] = React.useState(null); 
       const [editInputVal, setEditInputVal] = React.useState('');
 
-      // Firebase Auth & Cloud Sync State
       const [currentUser, setCurrentUser] = React.useState(null);
 
       React.useEffect(() => {
@@ -962,7 +975,6 @@
                   <div>
                     <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43', marginBottom: '14px' }}>Settings & Management</h3>
                     
-                    {/* Firebase Google Login / Sync Option */}
                     {!currentUser ? (
                       <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#EBF8FF', border: '1px solid #BEE3F8' }}>
                         <div className="settings-menu-info">
@@ -1136,7 +1148,6 @@
             )}
           </main>
 
-          {/* Modal for Editing Item Name */}
           {editingItem && (
             <div className="modal-overlay" onClick={() => setEditingItem(null)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -1151,7 +1162,6 @@
             </div>
           )}
 
-          {/* Modal for Customize Home Grids & Ordering */}
           {showCustomizeModal && (
             <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
