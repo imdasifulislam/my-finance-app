@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArthoGrow - Personal Finance</title>
+  <title>OrthoGro - Personal Finance</title>
   
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22ArthoGrow%22%2C%22short_name%22%3A%22ArthoGrow%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F6F8F7%22%2C%22theme_color%22%3A%22%2316845B%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F192%2Fwallet.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any maskable%22%7D%5D%7D">
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22OrthoGro%22%2C%22short_name%22%3A%22OrthoGro%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F6F8F7%22%2C%22theme_color%22%3A%22%2316845B%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F192%2Fwallet.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any maskable%22%7D%5D%7D">
   <meta name="theme-color" content="#16845B">
 
   <!-- React & Babel Production CDNs -->
@@ -167,8 +167,8 @@
 
   <div id="root">
     <div class="loading-container">
-      <div class="loading-brand">ArthoGrow</div>
-      <div class="loading-tagline">Track Save Grow</div>
+      <div class="loading-brand">OrthoGro</div>
+      <div class="loading-tagline">Track • Save • Grow</div>
       <div class="loading-sub">Personal Finance & wealth management.</div>
       <div class="spinner" style="margin-top: 15px;"></div>
       <div style="margin-top: 12px; font-size: 13px; color: #718096; font-weight: 600;">Loading...</div>
@@ -176,7 +176,6 @@
   </div>
 
   <script>
-    // Firebase Initialization with your real config
     const firebaseConfig = {
       apiKey: "AIzaSyBkAWyNjfN9ZBASMNxJjMwQVYN7XwC0QtE",
       authDomain: "arthogrow-68a0a.firebaseapp.com",
@@ -189,36 +188,22 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Firestore Offline Persistence Enable
     db.enablePersistence().catch((err) => {
       console.log("Offline persistence error: ", err.code);
     });
 
-    // PWA Service Worker Registration for Offline Support & App Installation
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         const swCode = `
-          self.addEventListener('install', (e) => {
-            self.skipWaiting();
-          });
-          self.addEventListener('activate', (e) => {
-            e.waitUntil(clients.claim());
-          });
+          self.addEventListener('install', (e) => { self.skipWaiting(); });
+          self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
           self.addEventListener('fetch', (e) => {
-            e.respondWith(
-              fetch(e.request).catch(() => {
-                return caches.match(e.request);
-              })
-            );
+            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
           });
         `;
         const blob = new Blob([swCode], { type: 'text/javascript' });
         const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).then(() => {
-          console.log('ServiceWorker registered successfully.');
-        }).catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
-        });
+        navigator.serviceWorker.register(swUrl).catch(() => {});
       });
     }
   </script>
@@ -274,9 +259,9 @@
               {(tx.type === 'lend' || tx.type === 'borrow') && (
                 <button 
                   className="icon-btn" 
-                  title={tx.resolved ? 'Already Resolved' : (tx.type === 'lend' ? 'Resolve Lend' : 'Resolve Borrow')}
+                  title={tx.resolved ? 'Undo Resolve' : (tx.type === 'lend' ? 'Resolve Lend' : 'Resolve Borrow')}
                   onClick={(e) => { e.stopPropagation(); onResolveDebt(tx); }}
-                  style={{ background: tx.resolved ? '#E6FFFA' : '#F6F8F7', color: tx.resolved ? '#16845B' : '#16845B', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                  style={{ background: tx.resolved ? '#16845B' : '#F6F8F7', color: tx.resolved ? 'white' : '#16845B', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                 >
                   <span className="material-icons" style={{ fontSize: '16px' }}>{tx.resolved ? 'task_alt' : 'check_circle'}</span>
                 </button>
@@ -288,7 +273,7 @@
                     <span className="t-tag" style={{background: '#EBF8FF', color: '#2B6CB0'}}>{tx.fromWallet} ➔ {tx.toWallet}</span>
                   ) : tx.type === 'lend' || tx.type === 'borrow' ? (
                     <span className="t-tag" style={{background: tx.resolved ? '#E6FFFA' : '#F6F8F7', color: tx.resolved ? '#16845B' : '#718096'}}>
-                      {tx.wallet} ({tx.type === 'lend' ? 'Lend' : 'Borrow'}) {tx.resolved ? '• [Resolved]' : ''}
+                      {tx.wallet} ({tx.type === 'lend' ? 'Lend' : 'Borrow'}) {tx.resolved ? `• [Paid via ${tx.resolveWallet || tx.wallet}]` : ''}
                     </span>
                   ) : (
                     <React.Fragment>
@@ -321,6 +306,9 @@
       const [resolveWallet, setResolveWallet] = React.useState('');
       const [editingItem, setEditingItem] = React.useState(null); 
       const [editInputVal, setEditInputVal] = React.useState('');
+      const [walletToCorrect, setWalletToCorrect] = React.useState(null);
+      const [correctBalanceInput, setCorrectBalanceInput] = React.useState('');
+      const [draggedIndex, setDraggedIndex] = React.useState(null);
 
       const [currentUser, setCurrentUser] = React.useState(null);
 
@@ -392,16 +380,16 @@
       };
       
       const [gridOrder, setGridOrder] = React.useState(() => {
-        const saved = localStorage.getItem('arthogrow_grid_order');
-        return saved ? JSON.parse(saved) : ['wallets', 'savings', 'netWorth', 'incExp', 'lendBorrow', 'categoryReport', 'transactions'];
+        const saved = localStorage.getItem('orthogro_grid_order');
+        return saved ? JSON.parse(saved) : ['netWorth', 'wallets', 'savings', 'incExp', 'lendBorrow', 'categoryReport', 'transactions'];
       });
 
       const [visibleGrids, setVisibleGrids] = React.useState(() => {
-        const saved = localStorage.getItem('arthogrow_grids');
+        const saved = localStorage.getItem('orthogro_grids');
         return saved ? JSON.parse(saved) : {
+          netWorth: true,
           wallets: true,
           savings: true,
-          netWorth: true,
           incExp: true,
           lendBorrow: true,
           categoryReport: true,
@@ -410,26 +398,34 @@
       });
 
       React.useEffect(() => {
-        localStorage.setItem('arthogrow_grids', JSON.stringify(visibleGrids));
-        localStorage.setItem('arthogrow_grid_order', JSON.stringify(gridOrder));
+        localStorage.setItem('orthogro_grids', JSON.stringify(visibleGrids));
+        localStorage.setItem('orthogro_grid_order', JSON.stringify(gridOrder));
       }, [visibleGrids, gridOrder]);
 
       const toggleGrid = (key) => {
         setVisibleGrids(prev => ({ ...prev, [key]: !prev[key] }));
       };
 
-      const moveGridOrder = (index, direction) => {
+      const handleDragStart = (index) => {
+        setDraggedIndex(index);
+      };
+
+      const handleDragOver = (e, index) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
         const newOrder = [...gridOrder];
-        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        if (targetIndex < 0 || targetIndex >= newOrder.length) return;
-        const temp = newOrder[index];
-        newOrder[index] = newOrder[targetIndex];
-        newOrder[targetIndex] = temp;
+        const item = newOrder.splice(draggedIndex, 1)[0];
+        newOrder.splice(index, 0, item);
+        setDraggedIndex(index);
         setGridOrder(newOrder);
+      };
+
+      const handleDragEnd = () => {
+        setDraggedIndex(null);
       };
       
       const [transactions, setTransactions] = React.useState(() => {
-        const savedData = localStorage.getItem('arthogrow_data');
+        const savedData = localStorage.getItem('orthogro_data');
         if (savedData) {
           let parsedData = JSON.parse(savedData);
           parsedData.sort((a, b) => new Date(b.rawDate || 0) - new Date(a.rawDate || 0));
@@ -439,22 +435,22 @@
       });
 
       const [wallets, setWallets] = React.useState(() => {
-        const saved = localStorage.getItem('arthogrow_wallets');
+        const saved = localStorage.getItem('orthogro_wallets');
         return saved ? JSON.parse(saved) : ['Bank', 'Bkash', 'Nagad', 'Cash'];
       });
 
       const [savingsList, setSavingsList] = React.useState(() => {
-        const saved = localStorage.getItem('arthogrow_savings');
+        const saved = localStorage.getItem('orthogro_savings');
         return saved ? JSON.parse(saved) : ['Savings', 'Samity', 'Investment'];
       });
 
       const [expenseCategories, setExpenseCategories] = React.useState(() => {
-        const saved = localStorage.getItem('arthogrow_exp_cats');
+        const saved = localStorage.getItem('orthogro_exp_cats');
         return saved ? JSON.parse(saved) : ['Family Maintenance', 'Relative', 'Personal', 'Career', 'Sadakah', 'Others'];
       });
 
       const [incomeCategories, setIncomeCategories] = React.useState(() => {
-        const saved = localStorage.getItem('arthogrow_inc_cats');
+        const saved = localStorage.getItem('orthogro_inc_cats');
         return saved ? JSON.parse(saved) : ['Salary', 'Business', 'Gift', 'Others'];
       });
 
@@ -464,27 +460,27 @@
       const [newIncCatInput, setNewIncCatInput] = React.useState('');
 
       React.useEffect(() => { 
-        localStorage.setItem('arthogrow_data', JSON.stringify(transactions)); 
+        localStorage.setItem('orthogro_data', JSON.stringify(transactions)); 
         syncToCloud(transactions, null, null, null, null);
       }, [transactions]);
 
       React.useEffect(() => { 
-        localStorage.setItem('arthogrow_wallets', JSON.stringify(wallets)); 
+        localStorage.setItem('orthogro_wallets', JSON.stringify(wallets)); 
         syncToCloud(null, wallets, null, null, null);
       }, [wallets]);
 
       React.useEffect(() => { 
-        localStorage.setItem('arthogrow_savings', JSON.stringify(savingsList)); 
+        localStorage.setItem('orthogro_savings', JSON.stringify(savingsList)); 
         syncToCloud(null, null, savingsList, null, null);
       }, [savingsList]);
 
       React.useEffect(() => { 
-        localStorage.setItem('arthogrow_exp_cats', JSON.stringify(expenseCategories)); 
+        localStorage.setItem('orthogro_exp_cats', JSON.stringify(expenseCategories)); 
         syncToCloud(null, null, null, expenseCategories, null);
       }, [expenseCategories]);
 
       React.useEffect(() => { 
-        localStorage.setItem('arthogrow_inc_cats', JSON.stringify(incomeCategories)); 
+        localStorage.setItem('orthogro_inc_cats', JSON.stringify(incomeCategories)); 
         syncToCloud(null, null, null, null, incomeCategories);
       }, [incomeCategories]);
 
@@ -537,16 +533,29 @@
           txCountByWallet[t.fromWallet] = (txCountByWallet[t.fromWallet] || 0) + 1;
           txCountByWallet[t.toWallet] = (txCountByWallet[t.toWallet] || 0) + 1;
         } else if (t.type === 'lend') {
-          if (!t.resolved) {
-            walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) - t.amount;
-            totalLend += t.amount;
-          }
+          walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) - t.amount;
           txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
-        } else if (t.type === 'borrow') {
+
           if (!t.resolved) {
-            walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) + t.amount;
-            totalBorrow += t.amount;
+            totalLend += t.amount;
+          } else {
+            const targetW = t.resolveWallet || t.wallet;
+            walletBalances[targetW] = (walletBalances[targetW] || 0) + t.amount;
+            txCountByWallet[targetW] = (txCountByWallet[targetW] || 0) + 1;
           }
+        } else if (t.type === 'borrow') {
+          walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) + t.amount;
+          txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
+
+          if (!t.resolved) {
+            totalBorrow += t.amount;
+          } else {
+            const targetW = t.resolveWallet || t.wallet;
+            walletBalances[targetW] = (walletBalances[targetW] || 0) - t.amount;
+            txCountByWallet[targetW] = (txCountByWallet[targetW] || 0) + 1;
+          }
+        } else if (t.type === 'adjustment') {
+          walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) + t.amount;
           txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
         }
 
@@ -564,10 +573,10 @@
           } else if (t.type === 'expense') {
             totalExpense += t.amount;
             expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
-          } else if (t.type === 'lend' && !t.resolved) {
-            totalExpense += t.amount; 
-          } else if (t.type === 'borrow' && !t.resolved) {
-            totalIncome += t.amount; 
+          } else if (t.type === 'adjustment' && t.amount > 0) {
+            totalIncome += t.amount;
+          } else if (t.type === 'adjustment' && t.amount < 0) {
+            totalExpense += Math.abs(t.amount);
           }
         }
       });
@@ -578,8 +587,11 @@
       const handleEntryChange = (index, field, value) => {
         const newEntries = [...entries];
         newEntries[index][field] = value;
-        if (field === 'type' && value !== 'transfer' && value !== 'lend' && value !== 'borrow') {
-          newEntries[index].category = value === 'expense' ? expenseCategories[0] : incomeCategories[0];
+        if (field === 'type') {
+          if (value !== 'transfer' && value !== 'lend' && value !== 'borrow') {
+            newEntries[index].category = value === 'expense' ? expenseCategories[0] : incomeCategories[0];
+          }
+          newEntries[index].title = '';
         }
         setEntries(newEntries);
       };
@@ -597,7 +609,7 @@
         }
 
         const newTxs = entries.map((entry, index) => {
-          let defaultTitle = entry.type === 'transfer' ? 'Fund Transfer' : entry.type === 'lend' ? 'Lend' : entry.type === 'borrow' ? 'Borrow' : entry.category;
+          let defaultTitle = entry.type === 'transfer' ? 'Cash Out' : entry.type === 'lend' ? 'Lend' : entry.type === 'borrow' ? 'Borrow' : entry.type === 'income' ? 'Salary month' : entry.category;
           let finalTitle = entry.title.trim() || defaultTitle;
           const selectedDate = new Date(entry.date);
           const displayDate = selectedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -649,7 +661,12 @@
           setResolvingTx(tx);
           setResolveWallet(allAccountOptions[0]);
         } else {
-          const updated = transactions.map(t => t.id === tx.id ? { ...t, resolved: false } : t);
+          const updated = transactions.map(t => {
+            if (t.id === tx.id) {
+              return { ...t, resolved: false, resolveWallet: null };
+            }
+            return t;
+          });
           setTransactions(updated);
         }
       };
@@ -662,58 +679,38 @@
           }
           return t;
         });
-        
+        setTransactions(updated);
+        setResolvingTx(null);
+      };
+
+      const handleWalletBalanceCorrection = () => {
+        if (!walletToCorrect || correctBalanceInput === '') return;
+        const targetWallet = walletToCorrect;
+        const currentBal = walletBalances[targetWallet] || 0;
+        const newBal = parseFloat(correctBalanceInput);
+        const diff = newBal - currentBal;
+
+        if (diff === 0) {
+          setWalletToCorrect(null);
+          setCorrectBalanceInput('');
+          return;
+        }
+
         const adjustmentTx = {
           id: Date.now(),
-          title: (resolvingTx.type === 'lend' ? 'Lend Collection: ' : 'Borrow Payment: ') + resolvingTx.title,
-          amount: resolvingTx.amount,
-          type: resolvingTx.type === 'lend' ? 'income' : 'expense',
+          title: `Balance Correction (${targetWallet})`,
+          amount: diff,
+          type: 'adjustment',
           category: 'General',
-          wallet: resolveWallet,
-          date: resolvingTx.date,
+          wallet: targetWallet,
+          date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
           rawDate: getTodayDate(),
           resolved: true
         };
 
-        setTransactions([adjustmentTx, ...updated]);
-        setResolvingTx(null);
-      };
-
-      const moveItem = (list, setList, index, direction) => {
-        const newList = [...list];
-        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        if (targetIndex < 0 || targetIndex >= newList.length) return;
-        const temp = newList[index];
-        newList[index] = newList[targetIndex];
-        newList[targetIndex] = temp;
-        setList(newList);
-      };
-
-      const handleItemEditPrompt = (list, setList, item, typeName) => {
-        setEditingItem({ listType: typeName, oldName: item });
-        setEditInputVal(item);
-      };
-
-      const saveEditedItem = () => {
-        if (!editingItem || !editInputVal.trim()) return;
-        const val = editInputVal.trim();
-        const { listType, oldName } = editingItem;
-
-        if (listType === 'wallet') {
-          if (wallets.includes(val)) return alert('Already exists!');
-          setWallets(wallets.map(w => w === oldName ? val : w));
-        } else if (listType === 'savings') {
-          if (savingsList.includes(val)) return alert('Already exists!');
-          setSavingsList(savingsList.map(s => s === oldName ? val : s));
-        } else if (listType === 'exp_cat') {
-          if (expenseCategories.includes(val)) return alert('Already exists!');
-          setExpenseCategories(expenseCategories.map(c => c === oldName ? val : c));
-        } else if (listType === 'inc_cat') {
-          if (incomeCategories.includes(val)) return alert('Already exists!');
-          setIncomeCategories(incomeCategories.map(c => c === oldName ? val : c));
-        }
-        setEditingItem(null);
-        setEditInputVal('');
+        setTransactions([adjustmentTx, ...transactions]);
+        setWalletToCorrect(null);
+        setCorrectBalanceInput('');
       };
 
       const lendTransactions = transactions.filter(t => t.type === 'lend');
@@ -722,6 +719,25 @@
 
       const renderGridByKey = (key) => {
         switch (key) {
+          case 'netWorth':
+            return visibleGrids.netWorth && (
+              <div 
+                key="netWorth"
+                className="net-worth-card" 
+                onClick={() => setShowFilterModal(true)}
+                onContextMenu={(e) => { e.preventDefault(); setShowFilterModal(true); }}
+              >
+                <div className="top-row">
+                  <span>Net Worth</span>
+                  <span>{globalFilter === 'monthly' ? 'Monthly' : globalFilter === 'yearly' ? 'Yearly' : globalFilter === 'custom' ? 'Custom' : 'All Time'} ▾</span>
+                </div>
+                <h2>৳ {netWorth.toLocaleString()}</h2>
+                <div className="sub-row">
+                  <span>×{totalTxCount} transactions</span>
+                  <span>{globalFilter === 'all' ? 'All Time' : globalFilter === 'monthly' ? 'This Month' : globalFilter === 'yearly' ? 'This Year' : 'Custom Period'}</span>
+                </div>
+              </div>
+            );
           case 'wallets':
             return visibleGrids.wallets && (
               <div key="wallets">
@@ -733,7 +749,7 @@
                   {wallets.map((w, idx) => {
                     const dotColors = ['#16845B', '#2B6CB0', '#D69E2E', '#805AD5'];
                     return (
-                      <div key={w} className="wallet-card">
+                      <div key={w} className="wallet-card" onClick={() => { setWalletToCorrect(w); setCorrectBalanceInput(walletBalances[w] || 0); }} title="Tap to correct balance">
                         <div className="wallet-dot" style={{ backgroundColor: dotColors[idx % dotColors.length] }}></div>
                         <h4>{w}</h4>
                         <div className="w-bal">৳ {(walletBalances[w] || 0).toLocaleString()}</div>
@@ -753,32 +769,13 @@
                 </div>
                 <div className="wallets-container">
                   {savingsList.map((s, idx) => (
-                    <div key={s} className="wallet-card">
+                    <div key={s} className="wallet-card" onClick={() => { setWalletToCorrect(s); setCorrectBalanceInput(walletBalances[s] || 0); }} title="Tap to correct balance">
                       <div className="wallet-dot" style={{ backgroundColor: '#2B6CB0' }}></div>
                       <h4>{s}</h4>
                       <div className="w-bal">৳ {(walletBalances[s] || 0).toLocaleString()}</div>
                       <div className="w-tx">{txCountByWallet[s] || 0} transactions</div>
                     </div>
                   ))}
-                </div>
-              </div>
-            );
-          case 'netWorth':
-            return visibleGrids.netWorth && (
-              <div 
-                key="netWorth"
-                className="net-worth-card" 
-                onClick={() => setShowFilterModal(true)}
-                onContextMenu={(e) => { e.preventDefault(); setShowFilterModal(true); }}
-              >
-                <div className="top-row">
-                  <span>Total Net Worth</span>
-                  <span>{globalFilter === 'monthly' ? 'Monthly' : globalFilter === 'yearly' ? 'Yearly' : globalFilter === 'custom' ? 'Custom' : 'All Time'} ▾</span>
-                </div>
-                <h2>৳ {netWorth.toLocaleString()}</h2>
-                <div className="sub-row">
-                  <span>×{totalTxCount} transactions</span>
-                  <span>{globalFilter === 'all' ? 'All Time' : globalFilter === 'monthly' ? 'This Month' : globalFilter === 'yearly' ? 'This Year' : 'Custom Period'}</span>
                 </div>
               </div>
             );
@@ -867,12 +864,12 @@
         <div className="app-container">
           <header className="header">
             <div>
-              <h1>ArthoGrow</h1>
-              <p style={{ fontSize: '11px', color: '#718096' }}>{currentUser ? currentUser.email : 'Offline Mode'}</p>
+              <h1>OrthoGro</h1>
+              <p style={{ fontSize: '11px', color: '#718096' }}>Track • Save • Grow</p>
             </div>
             <div className="header-actions">
               <button className="header-icon" title="Organize Home Grids" onClick={() => setShowCustomizeModal(true)}>
-                <span className="material-icons">tune</span>
+                <span className="material-icons">more_vert</span>
               </button>
             </div>
           </header>
@@ -952,7 +949,19 @@
 
                         <div className="form-group">
                           <label>Description (Note)</label>
-                          <input type="text" className="form-control" placeholder={entry.type === 'lend' ? "Lent to whom?" : entry.type === 'borrow' ? "Borrowed from whom?" : "e.g., Internet Bill"} value={entry.title} onChange={(e) => handleEntryChange(index, 'title', e.target.value)} />
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            placeholder={
+                              entry.type === 'lend' ? "Lent to whom?" : 
+                              entry.type === 'borrow' ? "Borrowed from whom?" : 
+                              entry.type === 'income' ? "e.g., Salary month" : 
+                              entry.type === 'transfer' ? "e.g., Cash Out, Saving, Invest" : 
+                              "e.g., Groceries"
+                            } 
+                            value={entry.title} 
+                            onChange={(e) => handleEntryChange(index, 'title', e.target.value)} 
+                          />
                         </div>
 
                         <div className="form-group">
@@ -964,7 +973,7 @@
                   })}
 
                   {!entries[0].id && <button type="button" className="btn-add-more" onClick={handleAddMore}>+ Add Another Entry</button>}
-                  <button type="submit" className="btn-submit">{entries[0].id ? 'Save Changes' : 'Save All Transactions'}</button>
+                  <button type="submit" className="btn-submit">{entries[0].id ? 'Save Changes' : 'Save Transaction'}</button>
                 </form>
               </div>
             )}
@@ -1162,31 +1171,53 @@
             </div>
           )}
 
+          {walletToCorrect && (
+            <div className="modal-overlay" onClick={() => setWalletToCorrect(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: '8px', color: '#16845B' }}>Correct Balance: {walletToCorrect}</h3>
+                <p style={{ fontSize: '12px', color: '#718096', marginBottom: '12px' }}>
+                  Current Recorded Balance: <strong style={{ color: '#102A43' }}>৳ {(walletBalances[walletToCorrect] || 0).toLocaleString()}</strong>
+                </p>
+                <div className="form-group">
+                  <label>New Correct Balance (৳)</label>
+                  <input type="number" className="form-control" value={correctBalanceInput} onChange={(e) => setCorrectBalanceInput(e.target.value)} />
+                </div>
+                <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={handleWalletBalanceCorrection}>Save Correction</button>
+                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#A0AEC0' }} onClick={() => setWalletToCorrect(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
           {showCustomizeModal && (
             <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ marginBottom: '15px', color: '#16845B' }}>Organize & Reorder Home Grids</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
+                <h3 style={{ marginBottom: '10px', color: '#16845B' }}>Organize & Reorder Home Grids</h3>
+                <p style={{ fontSize: '11px', color: '#718096', marginBottom: '14px' }}>Drag and drop items to reorder them on your home screen.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '15px' }}>
                   {gridOrder.map((key, idx) => {
                     const labelNames = {
+                      netWorth: 'Net Worth Grid',
                       wallets: 'Wallet Balance Grid',
                       savings: 'Deposit & Investment Grid',
-                      netWorth: 'Total Balance / Net Worth Grid',
                       incExp: 'Income & Expense Grid',
                       lendBorrow: 'Lend & Borrow Grid',
                       categoryReport: 'Category Expense Report',
                       transactions: 'Recent Transactions List'
                     };
                     return (
-                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F6F8F7', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E5EBE7' }}>
+                      <div 
+                        key={key} 
+                        draggable
+                        onDragStart={() => handleDragStart(idx)}
+                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F6F8F7', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E5EBE7', cursor: 'grab', userSelect: 'none' }}
+                      >
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1, color: '#102A43', fontWeight: '500' }}>
                           <input type="checkbox" checked={visibleGrids[key]} onChange={() => toggleGrid(key)} style={{ width: '16px', height: '16px', accentColor: '#16845B' }} />
                           {labelNames[key]}
                         </label>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button className="icon-btn" onClick={() => moveGridOrder(idx, 'up')} style={{ width: '26px', height: '26px' }}><span className="material-icons" style={{ fontSize: '16px' }}>arrow_upward</span></button>
-                          <button className="icon-btn" onClick={() => moveGridOrder(idx, 'down')} style={{ width: '26px', height: '26px' }}><span className="material-icons" style={{ fontSize: '16px' }}>arrow_downward</span></button>
-                        </div>
+                        <span className="material-icons" style={{ fontSize: '20px', color: '#A0AEC0' }}>drag_indicator</span>
                       </div>
                     );
                   })}
@@ -1208,14 +1239,14 @@
                   (modalType === 'lend_list' ? lendTransactions : borrowTransactions).map(tx => (
                     <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #E5EBE7' }}>
                       <div>
-                        <h4 style={{ fontSize: '13px', textDecoration: tx.resolved ? 'line-through' : 'none', color: '#102A43' }}>{tx.title} {tx.resolved ? '[Resolved]' : ''}</h4>
+                        <h4 style={{ fontSize: '13px', textDecoration: tx.resolved ? 'line-through' : 'none', color: '#102A43' }}>{tx.title} {tx.resolved ? `[Paid via ${tx.resolveWallet || tx.wallet}]` : ''}</h4>
                         <p style={{ fontSize: '10px', color: '#718096' }}>Wallet: {tx.wallet} • {tx.date}</p>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontWeight: 'bold', fontSize: '13px', color: modalType === 'lend_list' ? '#2B6CB0' : '#805AD5' }}>৳ {tx.amount.toLocaleString()}</span>
                         <button 
                           className="icon-btn" 
-                          title="Resolve"
+                          title="Resolve/Undo"
                           onClick={() => { handleResolveDebt(tx); }}
                           style={{ background: tx.resolved ? '#16845B' : '#F6F8F7', color: tx.resolved ? 'white' : '#16845B', width: '28px', height: '28px' }}
                         >
@@ -1234,7 +1265,7 @@
             <div className="modal-overlay" onClick={() => setResolvingTx(null)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h3 style={{ marginBottom: '12px', color: '#16845B' }}>
-                  {resolvingTx.type === 'lend' ? 'Select wallet for collection:' : 'Select wallet for payment:'}
+                  {resolvingTx.type === 'lend' ? 'Select wallet where money is received:' : 'Select wallet from which money is paid:'}
                 </h3>
                 <div className="form-group">
                   <label>Choose Wallet</label>
@@ -1242,7 +1273,7 @@
                     {allAccountOptions.map(acc => <option key={acc} value={acc}>{acc}</option>)}
                   </select>
                 </div>
-                <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={confirmResolveDebt}>Confirm</button>
+                <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={confirmResolveDebt}>Confirm Payment</button>
                 <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#A0AEC0' }} onClick={() => setResolvingTx(null)}>Cancel</button>
               </div>
             </div>
