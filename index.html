@@ -102,7 +102,7 @@
     .settings-card-item:active { cursor: grabbing; }
     .settings-info h4 { font-size: 13px; color: #102A43; margin-bottom: 2px; font-weight: 600; }
     .settings-info p { font-size: 10px; color: #718096; }
-    .settings-actions { display: flex; align-items: center; gap: 6px; }
+    .settings-actions { display: flex; align-items: center; gap: 12px; }
     .icon-btn { background: #E5EBE7; border: none; color: #718096; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .icon-btn:hover { background: #CBD5E0; }
     .icon-btn.delete:hover { background: #D94848; color: white; }
@@ -214,26 +214,18 @@
       const [offsetX, setOffsetX] = React.useState(0);
       const [isSwiped, setIsSwiped] = React.useState(false);
       const startXRef = React.useRef(0);
-      const timerRef = React.useRef(null);
 
       const handleStart = (clientX) => {
         startXRef.current = clientX;
-        timerRef.current = setTimeout(() => {
-          if (window.confirm("Do you want to edit this transaction?")) {
-            onEdit(tx);
-          }
-        }, 800);
       };
 
       const handleMove = (clientX) => {
-        clearTimeout(timerRef.current);
         const diff = clientX - startXRef.current;
         if (diff < -5 && diff > -130) { setOffsetX(diff); } 
         else if (diff > 5 && isSwiped) { setOffsetX(0); setIsSwiped(false); }
       };
 
       const handleEnd = () => {
-        clearTimeout(timerRef.current);
         if (offsetX < -60) { setIsSwiped(true); setOffsetX(-120); } 
         else { setIsSwiped(false); setOffsetX(0); }
       };
@@ -419,7 +411,7 @@
         setVisibleGrids(prev => ({ ...prev, [key]: !prev[key] }));
       };
 
-      // General Drag and Drop Handlers
+      // Drag and Drop Handlers
       const handleDragStart = (e, index, type) => {
         setDraggedType(type);
         if (type === 'grid') setDraggedGridIndex(index);
@@ -770,16 +762,6 @@
         setTransactions([adjustmentTx, ...transactions]);
         setWalletToCorrect(null);
         setCorrectBalanceInput('');
-      };
-
-      const moveItem = (list, setList, index, direction) => {
-        const newList = [...list];
-        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        if (targetIndex < 0 || targetIndex >= newList.length) return;
-        const temp = newList[index];
-        newList[index] = newList[targetIndex];
-        newList[targetIndex] = temp;
-        setList(newList);
       };
 
       const handleItemEditPrompt = (list, setList, item, typeName) => {
@@ -1164,13 +1146,13 @@
                         >
                           <div className="settings-info"><h4>{w}</h4><p>{txCountByWallet[w] || 0} transactions</p></div>
                           <div className="settings-actions">
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                             <button className="icon-btn delete" onClick={() => {
                               if ((txCountByWallet[w] || 0) > 0) return alert('Cannot delete wallet with transactions.');
                               if (wallets.length <= 1) return alert('At least one wallet required.');
                               if (window.confirm('Delete wallet?')) setWallets(wallets.filter(i => i !== w));
-                            }}><span className="material-icons">delete</span></button>
+                            }} title="Delete"><span className="material-icons">delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
@@ -1199,12 +1181,12 @@
                         >
                           <div className="settings-info"><h4>{s}</h4><p>{txCountByWallet[s] || 0} transactions</p></div>
                           <div className="settings-actions">
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                             <button className="icon-btn delete" onClick={() => {
                               if ((txCountByWallet[s] || 0) > 0) return alert('Cannot delete account with transactions.');
                               if (window.confirm('Delete account?')) setSavingsList(savingsList.filter(i => i !== s));
-                            }}><span className="material-icons">delete</span></button>
+                            }} title="Delete"><span className="material-icons">delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
@@ -1233,13 +1215,13 @@
                         >
                           <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
                           <div className="settings-actions">
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                             <button className="icon-btn delete" onClick={() => {
                               if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
                               if (expenseCategories.length <= 1) return alert('At least one category required.');
                               if (window.confirm('Delete category?')) setExpenseCategories(expenseCategories.filter(i => i !== c));
-                            }}><span className="material-icons">delete</span></button>
+                            }} title="Delete"><span className="material-icons">delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
@@ -1268,13 +1250,13 @@
                         >
                           <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
                           <div className="settings-actions">
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                             <button className="icon-btn delete" onClick={() => {
                               if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
                               if (incomeCategories.length <= 1) return alert('At least one category required.');
                               if (window.confirm('Delete category?')) setIncomeCategories(incomeCategories.filter(i => i !== c));
-                            }}><span className="material-icons">delete</span></button>
+                            }} title="Delete"><span className="material-icons">delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
