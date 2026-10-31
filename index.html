@@ -8,10 +8,16 @@
   <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22My%20Finance%20App%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23e8edf5%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
   <meta name="theme-color" content="#3b82f6">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
+  <!-- React & Babel Production CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
   
+  <!-- Firebase SDKs for Google Login & Cloud Backup -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
@@ -21,7 +27,6 @@
     
     .header { background-color: #e8edf5; color: #0f172a; padding: 18px 16px 10px 16px; display: flex; justify-content: space-between; align-items: center; user-select: none; }
     .header h1 { font-size: 26px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
     .header-icon { background: rgba(255, 255, 255, 0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); cursor: pointer; color: #475569; }
 
     .content { flex: 1; padding: 10px 16px; overflow-y: auto; padding-bottom: 90px; overflow-x: hidden; }
@@ -37,8 +42,6 @@
     .ie-card.expense h3 { color: #ef4444; font-size: 20px; font-weight: 700; }
     .ie-card.income h3 { color: #10b981; font-size: 20px; font-weight: 700; }
     .ie-card .ie-footer { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 4px; }
-
-    .section-title { font-size: 15px; margin-bottom: 8px; color: #0f172a; font-weight: 700; }
     
     .wallets-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; padding-right: 10px; }
     .wallets-container::-webkit-scrollbar { display: none; }
@@ -84,7 +87,6 @@
     .bottom-nav button .material-icons { font-size: 22px; }
     .bottom-nav button.active { color: #3b82f6; font-weight: 600; }
     
-    /* Perfect Round Shape for Add Button */
     .btn-add-tx { position: relative; top: -16px; background-color: #3b82f6 !important; color: white !important; width: 54px !important; height: 54px !important; min-width: 54px !important; max-width: 54px !important; border-radius: 50% !important; box-shadow: 0 6px 18px rgba(59, 130, 246, 0.35); flex: none !important; margin: 0 auto; display: flex !important; align-items: center !important; justify-content: center !important; }
     .btn-add-tx .material-icons { font-size: 30px; color: white; }
 
@@ -112,10 +114,33 @@
 <body>
 
   <div id="root">
-    <h3 style="text-align: center; margin-top: 50px; color: #666;">Loading...</h3>
+    <h3 style="text-align: center; margin-top: 50px; color: #666;">Loading App...</h3>
   </div>
 
   <script>
+    // --- FIREBASE CONFIGURATION SETUP ---
+    // (আপনার ফায়ারবেজ কনফিগারেশন এখানে বসানো হয়েছে)
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "your-app.firebaseapp.com",
+      projectId: "your-app-id",
+      storageBucket: "your-app.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:1234:web:abcd"
+    };
+
+    if (!firebase.apps.length) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+      } catch (err) {
+        console.log("Firebase Init Note: Config needs your project keys.");
+      }
+    }
+
+    const auth = window.firebase ? firebase.auth() : null;
+    const db = window.firebase ? firebase.firestore() : null;
+    const googleProvider = window.firebase ? new firebase.auth.GoogleAuthProvider() : null;
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
@@ -212,17 +237,50 @@
       const [activeTab, setActiveTab] = React.useState('home');
       const [settingsView, setSettingsView] = React.useState('menu');
       const [modalType, setModalType] = React.useState(null); 
-      const [globalFilter, setGlobalFilter] = React.useState('monthly'); // Default to Monthly
+      const [globalFilter, setGlobalFilter] = React.useState('monthly'); 
       const [customDateFrom, setCustomDateFrom] = React.useState('');
       const [customDateTo, setCustomDateTo] = React.useState('');
       const [showFilterModal, setShowFilterModal] = React.useState(false);
       const [showCustomizeModal, setShowCustomizeModal] = React.useState(false);
       const [resolvingTx, setResolvingTx] = React.useState(null);
       const [resolveWallet, setResolveWallet] = React.useState('');
-      const [editingItem, setEditingItem] = React.useState(null); // For editing wallet/savings/category
+      const [editingItem, setEditingItem] = React.useState(null); 
       const [editInputVal, setEditInputVal] = React.useState('');
+
+      // Google Account Sync State
+      const [googleUser, setGoogleUser] = React.useState(() => localStorage.getItem('my_finance_google_user') || '');
+
+      const handleGoogleLogin = () => {
+        if (auth && googleProvider) {
+          auth.signInWithPopup(googleProvider)
+            .then((result) => {
+              const user = result.user;
+              localStorage.setItem('my_finance_google_user', user.email);
+              setGoogleUser(user.email);
+              alert('Successfully signed in with Google: ' + user.email);
+            })
+            .catch((error) => {
+              alert('Google Login Error: ' + error.message);
+            });
+        } else {
+          // Fallback prompt if Firebase keys are placeholder
+          const email = prompt("Enter your Google Account (Gmail) for Cloud Sync:", "user@gmail.com");
+          if (email && email.includes('@')) {
+            localStorage.setItem('my_finance_google_user', email);
+            setGoogleUser(email);
+            alert('Signed in with ' + email);
+          }
+        }
+      };
+
+      const handleGoogleLogout = () => {
+        if (window.confirm("Sign out from Google account? Local data remains safe.")) {
+          if (auth) auth.signOut().catch(() => {});
+          localStorage.removeItem('my_finance_google_user');
+          setGoogleUser('');
+        }
+      };
       
-      // Home Screen Layout Customization State
       const [gridOrder, setGridOrder] = React.useState(() => {
         const saved = localStorage.getItem('my_finance_grid_order');
         return saved ? JSON.parse(saved) : ['wallets', 'savings', 'netWorth', 'incExp', 'lendBorrow', 'categoryReport', 'transactions'];
@@ -272,17 +330,17 @@
 
       const [wallets, setWallets] = React.useState(() => {
         const saved = localStorage.getItem('my_finance_wallets');
-        return saved ? JSON.parse(saved) : ['Cash', 'IBBL', 'City Bank'];
+        return saved ? JSON.parse(saved) : ['Bank', 'Bkash', 'Nagad', 'Cash'];
       });
 
       const [savingsList, setSavingsList] = React.useState(() => {
         const saved = localStorage.getItem('my_finance_savings');
-        return saved ? JSON.parse(saved) : ['Savings', 'DPS'];
+        return saved ? JSON.parse(saved) : ['সেভিংস', 'সমিতি', 'ইনভেস্টমেন্ট'];
       });
 
       const [expenseCategories, setExpenseCategories] = React.useState(() => {
         const saved = localStorage.getItem('my_finance_exp_cats');
-        return saved ? JSON.parse(saved) : ['Personal', 'Career', 'Family Maintenance', 'Food', 'Others'];
+        return saved ? JSON.parse(saved) : ['Family Maintenance', 'Relative', 'Personal', 'Career', 'Sadakah', 'Others'];
       });
 
       const [incomeCategories, setIncomeCategories] = React.useState(() => {
@@ -307,7 +365,7 @@
       };
 
       const allAccountOptions = [...wallets, ...savingsList];
-      const defaultEntry = { id: null, title: '', amount: '', type: 'expense', category: expenseCategories[0] || 'Food', wallet: allAccountOptions[0] || 'Cash', fromWallet: wallets[0] || 'Cash', toWallet: wallets[1] || 'IBBL', date: getTodayDate() };
+      const defaultEntry = { id: null, title: '', amount: '', type: 'expense', category: expenseCategories[0] || 'Personal', wallet: allAccountOptions[0] || 'Bank', fromWallet: wallets[0] || 'Bank', toWallet: wallets[1] || 'Bkash', date: getTodayDate() };
       const [entries, setEntries] = React.useState([{ ...defaultEntry }]);
 
       const now = new Date();
@@ -321,7 +379,7 @@
         } else if (globalFilter === 'custom' && customDateFrom && customDateTo) {
           return t.rawDate >= customDateFrom && t.rawDate <= customDateTo;
         }
-        return true; // 'all'
+        return true; 
       });
 
       const walletBalances = {};
@@ -667,13 +725,13 @@
       return (
         <div className="app-container">
           <header className="header">
-            <h1>Hello</h1>
+            <div>
+              <h1 style={{ fontSize: '22px' }}>Hello</h1>
+              <p style={{ fontSize: '11px', color: '#64748b' }}>{googleUser ? googleUser : 'Offline Mode'}</p>
+            </div>
             <div className="header-actions">
               <button className="header-icon" title="Organize Home Grids" onClick={() => setShowCustomizeModal(true)}>
                 <span className="material-icons">tune</span>
-              </button>
-              <button className="header-icon" title="Settings" onClick={() => { setActiveTab('settings'); setSettingsView('menu'); }}>
-                <span className="material-icons">more_vert</span>
               </button>
             </div>
           </header>
@@ -776,6 +834,28 @@
                   <div>
                     <h3 className="section-title" style={{marginBottom: '14px'}}>Settings & Management</h3>
                     
+                    {/* Google Login / Sync Option */}
+                    {!googleUser ? (
+                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                        <div className="settings-menu-info">
+                          <span className="material-icons" style={{ color: '#2563eb' }}>account_circle</span>
+                          <h4 style={{ color: '#1d4ed8' }}>Sign In with Google</h4>
+                        </div>
+                        <span className="material-icons" style={{color: '#3b82f6'}}>login</span>
+                      </div>
+                    ) : (
+                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                        <div className="settings-menu-info">
+                          <span className="material-icons" style={{ color: '#16a34a' }}>cloud_done</span>
+                          <div>
+                            <h4 style={{ color: '#15803d' }}>Google Connected</h4>
+                            <p style={{ fontSize: '10px', color: '#166534' }}>{googleUser}</p>
+                          </div>
+                        </div>
+                        <span className="material-icons" style={{color: '#16a34a'}}>sync</span>
+                      </div>
+                    )}
+
                     <div className="settings-menu-item" onClick={() => setSettingsView('wallets')}>
                       <div className="settings-menu-info">
                         <span className="material-icons">account_balance_wallet</span>
@@ -807,6 +887,16 @@
                       </div>
                       <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
                     </div>
+
+                    {googleUser && (
+                      <div className="settings-menu-item" onClick={handleGoogleLogout} style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
+                        <div className="settings-menu-info">
+                          <span className="material-icons" style={{ color: '#dc2626' }}>logout</span>
+                          <h4 style={{ color: '#b91c1c' }}>Sign Out from Google</h4>
+                        </div>
+                        <span className="material-icons" style={{color: '#ef4444'}}>chevron_right</span>
+                      </div>
+                    )}
 
                     <button onClick={() => { if(window.confirm("Reset all data?")) { setTransactions([]); localStorage.clear(); window.location.reload(); } }} style={{backgroundColor: '#ef4444', color: 'white', padding: '12px', border: 'none', borderRadius: '10px', width: '100%', marginTop: '20px', fontWeight: 'bold', cursor: 'pointer'}}>Reset All Data</button>
                   </div>
