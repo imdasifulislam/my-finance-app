@@ -194,33 +194,30 @@
       console.log("Offline persistence error: ", err.code);
     });
 
-    // PWA Service Worker Registration for Offline Support
+    // PWA Robust Service Worker for Full Offline Support & App Installation
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        const swCode = `
-          const CACHE_NAME = 'orthogro-cache-v1';
-          const urlsToCache = ['/', window.location.href];
-          self.addEventListener('install', (e) => {
-            e.waitUntil(
-              caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
-            );
-            self.skipWaiting();
-          });
-          self.addEventListener('activate', (e) => {
-            e.waitUntil(clients.claim());
-          });
-          self.addEventListener('fetch', (e) => {
-            e.respondWith(
-              fetch(e.request).catch(() => caches.match(e.request))
-            );
-          });
-        `;
-        const blob = new Blob([swCode], { type: 'text/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).then(() => {
-          console.log('ServiceWorker registered for offline support.');
-        }).catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          console.log('ServiceWorker registered with scope:', reg.scope);
+        }).catch((err) => {
+          // Fallback dynamic blob worker if separate sw.js is not present on Vercel root
+          const swCode = `
+            const CACHE_NAME = 'orthogro-v2';
+            self.addEventListener('install', (e) => {
+              self.skipWaiting();
+            });
+            self.addEventListener('activate', (e) => {
+              e.waitUntil(clients.claim());
+            });
+            self.addEventListener('fetch', (e) => {
+              e.respondWith(
+                fetch(e.request).catch(() => caches.match(e.request))
+              );
+            });
+          `;
+          const blob = new Blob([swCode], { type: 'text/javascript' });
+          const swUrl = URL.createObjectURL(blob);
+          navigator.serviceWorker.register(swUrl).catch(e => console.log('SW registration failed', e));
         });
       });
     }
