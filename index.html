@@ -189,22 +189,39 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // Firestore Offline Persistence
     db.enablePersistence().catch((err) => {
       console.log("Offline persistence error: ", err.code);
     });
 
+    // PWA Service Worker Registration for Offline Support
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         const swCode = `
-          self.addEventListener('install', (e) => { self.skipWaiting(); });
-          self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+          const CACHE_NAME = 'orthogro-cache-v1';
+          const urlsToCache = ['/', window.location.href];
+          self.addEventListener('install', (e) => {
+            e.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+            );
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(clients.claim());
+          });
           self.addEventListener('fetch', (e) => {
-            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+            e.respondWith(
+              fetch(e.request).catch(() => caches.match(e.request))
+            );
           });
         `;
         const blob = new Blob([swCode], { type: 'text/javascript' });
         const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).catch(() => {});
+        navigator.serviceWorker.register(swUrl).then(() => {
+          console.log('ServiceWorker registered for offline support.');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
       });
     }
   </script>
@@ -232,7 +249,6 @@
 
       return (
         <div style={{ position: 'relative', overflow: 'hidden', marginBottom: '8px', borderRadius: '16px' }}>
-          {/* Swipe Action Buttons: Edit on right, Delete on left inside the revealed area */}
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '120px', display: 'flex', zIndex: 0, borderRadius: '16px', overflow: 'hidden', backgroundColor: '#E5EBE7' }}>
             <div style={{ flex: 1, backgroundColor: '#EDF2F7', color: '#4A5568', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => onDelete(tx.id)} title="Delete">
               <span className="material-icons" style={{ fontSize: '18px', color: '#E53E3E' }}>delete</span>
@@ -1155,9 +1171,9 @@
                               if ((txCountByWallet[w] || 0) > 0) return alert('Cannot delete wallet with transactions.');
                               if (wallets.length <= 1) return alert('At least one wallet required.');
                               if (window.confirm('Delete wallet?')) setWallets(wallets.filter(i => i !== w));
-                            }} title="Delete"><span className="material-icons">delete</span></button>
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            }} title="Delete"><span className="material-icons" style={{ fontSize: '18px' }}>delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons" style={{ fontSize: '18px' }}>edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '22px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
@@ -1189,9 +1205,9 @@
                             <button className="icon-btn delete" onClick={() => {
                               if ((txCountByWallet[s] || 0) > 0) return alert('Cannot delete account with transactions.');
                               if (window.confirm('Delete account?')) setSavingsList(savingsList.filter(i => i !== s));
-                            }} title="Delete"><span className="material-icons">delete</span></button>
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            }} title="Delete"><span className="material-icons" style={{ fontSize: '18px' }}>delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons" style={{ fontSize: '18px' }}>edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '22px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
@@ -1224,9 +1240,9 @@
                               if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
                               if (expenseCategories.length <= 1) return alert('At least one category required.');
                               if (window.confirm('Delete category?')) setExpenseCategories(expenseCategories.filter(i => i !== c));
-                            }} title="Delete"><span className="material-icons">delete</span></button>
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            }} title="Delete"><span className="material-icons" style={{ fontSize: '18px' }}>delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons" style={{ fontSize: '18px' }}>edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '22px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
@@ -1259,9 +1275,9 @@
                               if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
                               if (incomeCategories.length <= 1) return alert('At least one category required.');
                               if (window.confirm('Delete category?')) setIncomeCategories(incomeCategories.filter(i => i !== c));
-                            }} title="Delete"><span className="material-icons">delete</span></button>
-                            <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons">edit</span></button>
-                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            }} title="Delete"><span className="material-icons" style={{ fontSize: '18px' }}>delete</span></button>
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons" style={{ fontSize: '18px' }}>edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '22px' }}>drag_indicator</span>
                           </div>
                         </div>
                       ))}
