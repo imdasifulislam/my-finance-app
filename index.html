@@ -103,9 +103,9 @@
     .settings-info h4 { font-size: 13px; color: #102A43; margin-bottom: 2px; font-weight: 600; }
     .settings-info p { font-size: 10px; color: #718096; }
     .settings-actions { display: flex; align-items: center; gap: 12px; }
-    .icon-btn { background: #E5EBE7; border: none; color: #718096; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .icon-btn:hover { background: #CBD5E0; }
-    .icon-btn.delete:hover { background: #D94848; color: white; }
+    .icon-btn { background: #EDF2F7; border: none; color: #4A5568; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .icon-btn:hover { background: #E2E8F0; color: #102A43; }
+    .icon-btn.delete:hover { background: #FED7D7; color: #E53E3E; }
 
     .add-row { display: flex; gap: 8px; margin-top: 12px; margin-bottom: 16px; }
     .back-btn { background: none; border: none; color: #16845B; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
@@ -232,9 +232,14 @@
 
       return (
         <div style={{ position: 'relative', overflow: 'hidden', marginBottom: '8px', borderRadius: '16px' }}>
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '120px', display: 'flex', zIndex: 0, borderRadius: '16px', overflow: 'hidden' }}>
-            <div style={{ flex: 1, backgroundColor: '#16845B', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => onEdit(tx)}>Edit</div>
-            <div style={{ flex: 1, backgroundColor: '#D94848', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => { if (window.confirm("Delete this?")) onDelete(tx.id); }}>Delete</div>
+          {/* Swipe Action Buttons: Edit on right, Delete on left inside the revealed area */}
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '120px', display: 'flex', zIndex: 0, borderRadius: '16px', overflow: 'hidden', backgroundColor: '#E5EBE7' }}>
+            <div style={{ flex: 1, backgroundColor: '#EDF2F7', color: '#4A5568', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => onDelete(tx.id)} title="Delete">
+              <span className="material-icons" style={{ fontSize: '18px', color: '#E53E3E' }}>delete</span>
+            </div>
+            <div style={{ flex: 1, backgroundColor: '#EDF2F7', color: '#4A5568', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => onEdit(tx)} title="Edit">
+              <span className="material-icons" style={{ fontSize: '18px', color: '#4A5568' }}>edit</span>
+            </div>
           </div>
           
           <div 
