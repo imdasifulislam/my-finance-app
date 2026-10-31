@@ -5,85 +5,126 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Finance App</title>
   
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22My%20Finance%20App%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23e8edf5%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <meta name="theme-color" content="#3b82f6">
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
   
-  <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background-color: #f4f7f6; overflow-x: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #e8edf5; color: #1e293b; overflow-x: hidden; }
     .app-container { display: flex; flex-direction: column; height: 100vh; }
-    .header { background-color: #007bff; color: white; padding: 15px; text-align: center; user-select: none; }
-    .content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; overflow-x: hidden; }
     
-    .summary-card { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    .summary-card h3 { font-size: 14px; margin-bottom: 5px; opacity: 0.9; font-weight: normal; }
-    .summary-card h2 { font-size: 28px; margin-bottom: 15px; }
-    .inc-exp { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; }
-    .inc-exp div { flex: 1; }
-    .inc-exp h3 { font-size: 12px; opacity: 0.8; }
-    .inc-exp p { font-size: 16px; font-weight: bold; }
+    .header { background-color: #e8edf5; color: #0f172a; padding: 18px 16px 10px 16px; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+    .header h1 { font-size: 26px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .header-icon { background: rgba(255, 255, 255, 0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); cursor: pointer; color: #475569; }
+
+    .content { flex: 1; padding: 10px 16px; overflow-y: auto; padding-bottom: 90px; overflow-x: hidden; }
     
-    .section-title { font-size: 16px; margin-bottom: 12px; color: #444; font-weight: bold; }
-    .wallets-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 5px; }
+    .net-worth-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 16px; border-radius: 18px; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); cursor: pointer; border: 1px solid #cbd5e1; }
+    .net-worth-card .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; color: #64748b; font-size: 13px; font-weight: 600; }
+    .net-worth-card h2 { font-size: 26px; color: #10b981; margin-bottom: 8px; font-weight: 700; }
+    .net-worth-card .sub-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 8px; }
+
+    .inc-exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .ie-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 14px; border-radius: 18px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; }
+    .ie-card .ie-title { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+    .ie-card.expense h3 { color: #ef4444; font-size: 20px; font-weight: 700; }
+    .ie-card.income h3 { color: #10b981; font-size: 20px; font-weight: 700; }
+    .ie-card .ie-footer { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 4px; }
+
+    .section-title { font-size: 15px; margin-bottom: 8px; color: #0f172a; font-weight: 700; }
+    
+    .wallets-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; padding-right: 10px; }
     .wallets-container::-webkit-scrollbar { display: none; }
-    .wallet-card { min-width: 130px; padding: 15px; border-radius: 10px; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .wallet-bkash { background-color: #e2136e; }
-    .wallet-nagad { background-color: #f7931e; }
-    .wallet-cash { background-color: #28a745; }
-    .wallet-bank { background-color: #6f42c1; }
-    .wallet-card h4 { font-size: 14px; opacity: 0.9; margin-bottom: 5px; font-weight: normal; }
-    .wallet-card h3 { font-size: 18px; }
+    
+    .wallet-card { min-width: 145px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 14px; border-radius: 18px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; cursor: pointer; flex-shrink: 0; position: relative; }
+    .wallet-card h4 { font-size: 15px; color: #0f172a; margin-bottom: 2px; font-weight: 700; }
+    .wallet-card .w-bal { font-size: 16px; font-weight: 700; color: #10b981; margin-bottom: 4px; }
+    .wallet-card .w-tx { font-size: 10px; color: #94a3b8; }
+    .wallet-dot { position: absolute; top: 14px; right: 14px; width: 8px; height: 8px; border-radius: 50%; }
 
-    /* Category Progress Bars */
-    .category-report { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .cat-bar-container { margin-bottom: 12px; }
+    .grid-2-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+    .category-report { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 16px; border-radius: 18px; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; }
+    .cat-bar-container { margin-bottom: 10px; }
     .cat-bar-container:last-child { margin-bottom: 0; }
-    .cat-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 4px; }
-    .cat-bg { background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden; }
-    .cat-fill { background: #dc3545; height: 100%; border-radius: 4px; }
+    .cat-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 3px; }
+    .cat-bg { background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; }
+    .cat-fill { background: #3b82f6; height: 100%; border-radius: 3px; }
 
-    .t-info h4 { font-size: 15px; color: #222; margin-bottom: 6px; }
-    .t-info p { font-size: 12px; color: #777; display: flex; align-items: center; gap: 5px; }
-    .t-tag { font-size: 10px; background: #eee; padding: 3px 6px; border-radius: 4px; color: #555; font-weight: bold; }
-    .t-amount { font-size: 15px; font-weight: bold; text-align: right; }
-    .income { color: #28a745; }
-    .expense { color: #dc3545; }
-    .transfer { color: #17a2b8; }
+    .t-item { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 12px 16px; border-radius: 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03); border: 1px solid #cbd5e1; }
+    .t-info h4 { font-size: 13px; color: #0f172a; margin-bottom: 2px; font-weight: 600; }
+    .t-info p { font-size: 10px; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
+    .t-tag { font-size: 9px; background: #e2e8f0; padding: 2px 5px; border-radius: 4px; color: #475569; font-weight: 600; }
+    .t-amount { font-size: 14px; font-weight: bold; text-align: right; }
+    .income { color: #10b981; }
+    .expense { color: #ef4444; }
+    .transfer { color: #3b82f6; }
 
-    .page { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .page { background: #ffffff; padding: 18px; border-radius: 18px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; }
     
-    .entry-block { background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ccc; position: relative; }
-    .entry-header { font-size: 14px; font-weight: bold; color: #007bff; margin-bottom: 10px; display: flex; justify-content: space-between; }
-    .btn-remove { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-    .btn-add-more { background: #e9ecef; color: #333; width: 100%; padding: 12px; border: 1px dashed #aaa; border-radius: 5px; font-size: 15px; font-weight: bold; margin-bottom: 15px; cursor: pointer; }
+    .entry-block { background: #f8fafc; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px dashed #cbd5e0; position: relative; }
+    .entry-header { font-size: 13px; font-weight: bold; color: #3b82f6; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .btn-remove { background: #ef4444; color: white; border: none; padding: 3px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    .btn-add-more { background: #f1f5f9; color: #475569; width: 100%; padding: 10px; border: 1px dashed #cbd5e0; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 12px; cursor: pointer; }
     
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; margin-bottom: 4px; font-size: 13px; color: #555; font-weight: bold; }
-    .form-control { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; background: white; }
-    .btn-submit { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; margin-bottom: 3px; font-size: 12px; color: #475569; font-weight: 600; }
+    .form-control { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 13px; background: white; color: #1e293b; }
+    .btn-submit { width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); }
     
-    .bottom-nav { display: flex; background-color: white; border-top: 1px solid #ddd; position: fixed; bottom: 0; width: 100%; height: 65px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100; align-items: center; justify-content: space-around; }
-    .bottom-nav button { flex: 1; border: none; background: none; color: #999; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; height: 100%; }
-    .bottom-nav button .material-icons { font-size: 28px; }
-    .bottom-nav button.active { color: #007bff; }
+    .bottom-nav { display: flex; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #cbd5e1; position: fixed; bottom: 0; width: 100%; height: 68px; z-index: 100; align-items: center; justify-content: space-around; box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.04); }
+    .bottom-nav button { flex: 1; border: none; background: none; color: #94a3b8; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; font-size: 10px; gap: 2px; }
+    .bottom-nav button .material-icons { font-size: 22px; }
+    .bottom-nav button.active { color: #3b82f6; font-weight: 600; }
     
-    .btn-add-tx { position: relative; top: -20px; background-color: #007bff !important; color: white !important; width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4); flex: none !important; margin: 0 auto; }
-    .btn-add-tx .material-icons { font-size: 32px; }
-    .btn-add-tx:active { transform: scale(0.95); }
+    /* Perfect Round Shape for Add Button */
+    .btn-add-tx { position: relative; top: -16px; background-color: #3b82f6 !important; color: white !important; width: 54px !important; height: 54px !important; min-width: 54px !important; max-width: 54px !important; border-radius: 50% !important; box-shadow: 0 6px 18px rgba(59, 130, 246, 0.35); flex: none !important; margin: 0 auto; display: flex !important; align-items: center !important; justify-content: center !important; }
+    .btn-add-tx .material-icons { font-size: 30px; color: white; }
+
+    .settings-menu-item { background: #f8fafc; padding: 14px; border-radius: 14px; margin-bottom: 10px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; }
+    .settings-menu-item:hover { background: #f1f5f9; }
+    .settings-menu-info { display: flex; align-items: center; gap: 10px; }
+    .settings-menu-info .material-icons { color: #3b82f6; font-size: 22px; }
+    .settings-menu-info h4 { font-size: 14px; color: #0f172a; font-weight: 600; }
+
+    .settings-card-item { background: #f8fafc; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; }
+    .settings-info h4 { font-size: 13px; color: #0f172a; margin-bottom: 2px; font-weight: 600; }
+    .settings-info p { font-size: 10px; color: #94a3b8; }
+    .settings-actions { display: flex; align-items: center; gap: 6px; }
+    .icon-btn { background: #e2e8f0; border: none; color: #475569; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .icon-btn:hover { background: #cbd5e1; }
+    .icon-btn.delete:hover { background: #ef4444; color: white; }
+
+    .add-row { display: flex; gap: 8px; margin-top: 12px; margin-bottom: 16px; }
+    .back-btn { background: none; border: none; color: #3b82f6; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
+    .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1); border: 1px solid #cbd5e1; }
   </style>
 </head>
 <body>
 
   <div id="root">
-    <h3 style="text-align: center; margin-top: 50px; color: #666;">লোডিং...</h3>
+    <h3 style="text-align: center; margin-top: 50px; color: #666;">Loading...</h3>
   </div>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
+      });
+    }
+  </script>
+
   <script type="text/babel">
-    function SwipeableTransaction({ tx, onDelete }) {
+    function SwipeableTransaction({ tx, onDelete, onEdit, onResolveDebt }) {
       const [offsetX, setOffsetX] = React.useState(0);
       const [isSwiped, setIsSwiped] = React.useState(false);
       const startXRef = React.useRef(0);
@@ -92,32 +133,30 @@
       const handleStart = (clientX) => {
         startXRef.current = clientX;
         timerRef.current = setTimeout(() => {
-          if (window.confirm("আপনি কি এই লেনদেনটি মুছে ফেলতে চান?")) {
-            onDelete(tx.id);
+          if (window.confirm("Do you want to edit this transaction?")) {
+            onEdit(tx);
           }
-        }, 1000);
+        }, 800);
       };
 
       const handleMove = (clientX) => {
         clearTimeout(timerRef.current);
         const diff = clientX - startXRef.current;
-        if (diff < -5 && diff > -90) { setOffsetX(diff); } 
+        if (diff < -5 && diff > -130) { setOffsetX(diff); } 
         else if (diff > 5 && isSwiped) { setOffsetX(0); setIsSwiped(false); }
       };
 
       const handleEnd = () => {
         clearTimeout(timerRef.current);
-        if (offsetX < -40) { setIsSwiped(true); setOffsetX(-80); } 
+        if (offsetX < -60) { setIsSwiped(true); setOffsetX(-120); } 
         else { setIsSwiped(false); setOffsetX(0); }
       };
 
       return (
-        <div style={{ position: 'relative', overflow: 'hidden', marginBottom: '10px', borderRadius: '10px' }}>
-          <div 
-            style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '80px', backgroundColor: '#ff4d4d', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', borderRadius: '10px', cursor: 'pointer', zIndex: 0 }} 
-            onClick={() => { if (window.confirm("মুছে ফেলতে চান?")) onDelete(tx.id); }}
-          >
-            Delete
+        <div style={{ position: 'relative', overflow: 'hidden', marginBottom: '8px', borderRadius: '16px' }}>
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '120px', display: 'flex', zIndex: 0, borderRadius: '16px', overflow: 'hidden' }}>
+            <div style={{ flex: 1, backgroundColor: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => onEdit(tx)}>Edit</div>
+            <div style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => { if (window.confirm("Delete this?")) onDelete(tx.id); }}>Delete</div>
           </div>
           
           <div 
@@ -128,24 +167,41 @@
             onMouseMove={(e) => { if (e.buttons === 1) handleMove(e.clientX) }}
             onMouseUp={handleEnd}
             onMouseLeave={handleEnd}
-            style={{ transform: `translateX(${isSwiped ? -80 : (offsetX < 0 ? offsetX : 0)}px)`, transition: isSwiped || offsetX === 0 ? 'transform 0.3s ease' : 'none', background: 'white', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', position: 'relative', zIndex: 1, userSelect: 'none' }}
+            className="t-item"
+            style={{ transform: `translateX(${isSwiped ? -120 : (offsetX < 0 ? offsetX : 0)}px)`, transition: isSwiped || offsetX === 0 ? 'transform 0.3s ease' : 'none', position: 'relative', zIndex: 1, userSelect: 'none', margin: 0 }}
           >
-            <div className="t-info">
-              <h4>{tx.title}</h4>
-              <p>
-                {tx.type === 'transfer' ? (
-                  <span className="t-tag" style={{background: '#d1ecf1', color: '#0c5460'}}>{tx.fromWallet} ➔ {tx.toWallet}</span>
-                ) : (
-                  <React.Fragment>
-                    <span className="t-tag">{tx.category}</span> 
-                    <span className="t-tag">{tx.wallet}</span>
-                  </React.Fragment>
-                )}
-                <span style={{marginLeft: '5px'}}>{tx.date}</span>
-              </p>
+            <div className="t-info" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '70%' }}>
+              {(tx.type === 'lend' || tx.type === 'borrow') && (
+                <button 
+                  className="icon-btn" 
+                  title={tx.resolved ? 'Already Resolved' : (tx.type === 'lend' ? 'Resolve Lend' : 'Resolve Borrow')}
+                  onClick={(e) => { e.stopPropagation(); onResolveDebt(tx); }}
+                  style={{ background: tx.resolved ? '#dcfce7' : '#f1f5f9', color: tx.resolved ? '#10b981' : '#3b82f6', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                >
+                  <span className="material-icons" style={{ fontSize: '16px' }}>{tx.resolved ? 'task_alt' : 'check_circle'}</span>
+                </button>
+              )}
+              <div>
+                <h4 style={{ textDecoration: tx.resolved ? 'line-through' : 'none', color: tx.resolved ? '#94a3b8' : '#0f172a' }}>{tx.title}</h4>
+                <p>
+                  {tx.type === 'transfer' ? (
+                    <span className="t-tag" style={{background: '#e0f2fe', color: '#0369a1'}}>{tx.fromWallet} ➔ {tx.toWallet}</span>
+                  ) : tx.type === 'lend' || tx.type === 'borrow' ? (
+                    <span className="t-tag" style={{background: tx.resolved ? '#dcfce7' : '#f1f5f9', color: tx.resolved ? '#166534' : '#475569'}}>
+                      {tx.wallet} ({tx.type === 'lend' ? 'Lend' : 'Borrow'}) {tx.resolved ? '• [Resolved]' : ''}
+                    </span>
+                  ) : (
+                    <React.Fragment>
+                      <span className="t-tag">{tx.category}</span> 
+                      <span className="t-tag">{tx.wallet}</span>
+                    </React.Fragment>
+                  )}
+                  <span>{tx.date}</span>
+                </p>
+              </div>
             </div>
-            <div className={`t-amount ${tx.type}`}>
-              {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : '⇄'} ৳ {tx.amount.toLocaleString()}
+            <div className={`t-amount ${tx.resolved ? '' : tx.type}`} style={{ color: tx.resolved ? '#94a3b8' : undefined }}>
+              {tx.resolved ? '✓ ' : (tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : tx.type === 'lend' ? '-' : tx.type === 'borrow' ? '+' : '⇄')} ৳ {tx.amount.toLocaleString()}
             </div>
           </div>
         </div>
@@ -154,74 +210,189 @@
 
     function App() {
       const [activeTab, setActiveTab] = React.useState('home');
+      const [settingsView, setSettingsView] = React.useState('menu');
+      const [modalType, setModalType] = React.useState(null); 
+      const [globalFilter, setGlobalFilter] = React.useState('monthly'); // Default to Monthly
+      const [customDateFrom, setCustomDateFrom] = React.useState('');
+      const [customDateTo, setCustomDateTo] = React.useState('');
+      const [showFilterModal, setShowFilterModal] = React.useState(false);
+      const [showCustomizeModal, setShowCustomizeModal] = React.useState(false);
+      const [resolvingTx, setResolvingTx] = React.useState(null);
+      const [resolveWallet, setResolveWallet] = React.useState('');
+      const [editingItem, setEditingItem] = React.useState(null); // For editing wallet/savings/category
+      const [editInputVal, setEditInputVal] = React.useState('');
+      
+      // Home Screen Layout Customization State
+      const [gridOrder, setGridOrder] = React.useState(() => {
+        const saved = localStorage.getItem('my_finance_grid_order');
+        return saved ? JSON.parse(saved) : ['wallets', 'savings', 'netWorth', 'incExp', 'lendBorrow', 'categoryReport', 'transactions'];
+      });
+
+      const [visibleGrids, setVisibleGrids] = React.useState(() => {
+        const saved = localStorage.getItem('my_finance_grids');
+        return saved ? JSON.parse(saved) : {
+          wallets: true,
+          savings: true,
+          netWorth: true,
+          incExp: true,
+          lendBorrow: true,
+          categoryReport: true,
+          transactions: true
+        };
+      });
+
+      React.useEffect(() => {
+        localStorage.setItem('my_finance_grids', JSON.stringify(visibleGrids));
+        localStorage.setItem('my_finance_grid_order', JSON.stringify(gridOrder));
+      }, [visibleGrids, gridOrder]);
+
+      const toggleGrid = (key) => {
+        setVisibleGrids(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+
+      const moveGridOrder = (index, direction) => {
+        const newOrder = [...gridOrder];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= newOrder.length) return;
+        const temp = newOrder[index];
+        newOrder[index] = newOrder[targetIndex];
+        newOrder[targetIndex] = temp;
+        setGridOrder(newOrder);
+      };
       
       const [transactions, setTransactions] = React.useState(() => {
         const savedData = localStorage.getItem('my_finance_data');
         if (savedData) {
           let parsedData = JSON.parse(savedData);
-          parsedData = parsedData.map(tx => {
-            if (!tx.rawDate) {
-              const fallbackDate = new Date(tx.id);
-              return { ...tx, rawDate: fallbackDate.toISOString().split('T')[0] };
-            }
-            return tx;
-          });
-          parsedData.sort((a, b) => {
-            const timeA = new Date(a.rawDate).getTime();
-            const timeB = new Date(b.rawDate).getTime();
-            if (timeB === timeA) return b.id - a.id; 
-            return timeB - timeA;
-          });
+          parsedData.sort((a, b) => new Date(b.rawDate || 0) - new Date(a.rawDate || 0));
           return parsedData;
         }
         return [];
       });
 
-      React.useEffect(() => {
-        localStorage.setItem('my_finance_data', JSON.stringify(transactions));
-      }, [transactions]);
+      const [wallets, setWallets] = React.useState(() => {
+        const saved = localStorage.getItem('my_finance_wallets');
+        return saved ? JSON.parse(saved) : ['Cash', 'IBBL', 'City Bank'];
+      });
+
+      const [savingsList, setSavingsList] = React.useState(() => {
+        const saved = localStorage.getItem('my_finance_savings');
+        return saved ? JSON.parse(saved) : ['Savings', 'DPS'];
+      });
+
+      const [expenseCategories, setExpenseCategories] = React.useState(() => {
+        const saved = localStorage.getItem('my_finance_exp_cats');
+        return saved ? JSON.parse(saved) : ['Personal', 'Career', 'Family Maintenance', 'Food', 'Others'];
+      });
+
+      const [incomeCategories, setIncomeCategories] = React.useState(() => {
+        const saved = localStorage.getItem('my_finance_inc_cats');
+        return saved ? JSON.parse(saved) : ['Salary', 'Business', 'Gift', 'Others'];
+      });
+
+      const [newWalletInput, setNewWalletInput] = React.useState('');
+      const [newSavingsInput, setNewSavingsInput] = React.useState('');
+      const [newExpCatInput, setNewExpCatInput] = React.useState('');
+      const [newIncCatInput, setNewIncCatInput] = React.useState('');
+
+      React.useEffect(() => { localStorage.setItem('my_finance_data', JSON.stringify(transactions)); }, [transactions]);
+      React.useEffect(() => { localStorage.setItem('my_finance_wallets', JSON.stringify(wallets)); }, [wallets]);
+      React.useEffect(() => { localStorage.setItem('my_finance_savings', JSON.stringify(savingsList)); }, [savingsList]);
+      React.useEffect(() => { localStorage.setItem('my_finance_exp_cats', JSON.stringify(expenseCategories)); }, [expenseCategories]);
+      React.useEffect(() => { localStorage.setItem('my_finance_inc_cats', JSON.stringify(incomeCategories)); }, [incomeCategories]);
 
       const getTodayDate = () => {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       };
 
-      const defaultEntry = { title: '', amount: '', type: 'expense', category: 'Food', wallet: 'Bkash', fromWallet: 'Bank', toWallet: 'Bkash', date: getTodayDate() };
+      const allAccountOptions = [...wallets, ...savingsList];
+      const defaultEntry = { id: null, title: '', amount: '', type: 'expense', category: expenseCategories[0] || 'Food', wallet: allAccountOptions[0] || 'Cash', fromWallet: wallets[0] || 'Cash', toWallet: wallets[1] || 'IBBL', date: getTodayDate() };
       const [entries, setEntries] = React.useState([{ ...defaultEntry }]);
 
-      const expenseCategories = ['Food', 'Bills', 'Transport', 'Shopping', 'Health', 'Others'];
-      const incomeCategories = ['Salary', 'Business', 'Gift', 'Others'];
+      const now = new Date();
+      const filteredTransactions = transactions.filter(t => {
+        if (!t.rawDate) return true;
+        const tDate = new Date(t.rawDate);
+        if (globalFilter === 'monthly') {
+          return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+        } else if (globalFilter === 'yearly') {
+          return tDate.getFullYear() === now.getFullYear();
+        } else if (globalFilter === 'custom' && customDateFrom && customDateTo) {
+          return t.rawDate >= customDateFrom && t.rawDate <= customDateTo;
+        }
+        return true; // 'all'
+      });
 
-      const walletBalances = { 'Bkash': 0, 'Nagad': 0, 'Cash': 0, 'Bank': 0 };
+      const walletBalances = {};
+      wallets.forEach(w => walletBalances[w] = 0);
+      savingsList.forEach(s => walletBalances[s] = 0);
+
       let totalIncome = 0; 
       let totalExpense = 0;
+      let totalLend = 0;
+      let totalBorrow = 0;
       const expenseByCategory = {};
+      const txCountByWallet = {};
+      const txCountByCategory = {};
 
       transactions.forEach(t => {
         if(t.type === 'income') {
           walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) + t.amount;
-          totalIncome += t.amount;
+          txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
         } else if (t.type === 'expense') {
           walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) - t.amount;
-          totalExpense += t.amount;
-          expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
+          txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
+          txCountByCategory[t.category] = (txCountByCategory[t.category] || 0) + 1;
         } else if (t.type === 'transfer') {
           walletBalances[t.fromWallet] = (walletBalances[t.fromWallet] || 0) - t.amount;
           walletBalances[t.toWallet] = (walletBalances[t.toWallet] || 0) + t.amount;
+          txCountByWallet[t.fromWallet] = (txCountByWallet[t.fromWallet] || 0) + 1;
+          txCountByWallet[t.toWallet] = (txCountByWallet[t.toWallet] || 0) + 1;
+        } else if (t.type === 'lend') {
+          if (!t.resolved) {
+            walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) - t.amount;
+            totalLend += t.amount;
+          }
+          txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
+        } else if (t.type === 'borrow') {
+          if (!t.resolved) {
+            walletBalances[t.wallet] = (walletBalances[t.wallet] || 0) + t.amount;
+            totalBorrow += t.amount;
+          }
+          txCountByWallet[t.wallet] = (txCountByWallet[t.wallet] || 0) + 1;
+        }
+
+        const matchesFilter = (globalFilter === 'all') || (t.rawDate && (() => {
+          const tDate = new Date(t.rawDate);
+          if (globalFilter === 'monthly') return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+          if (globalFilter === 'yearly') return tDate.getFullYear() === now.getFullYear();
+          if (globalFilter === 'custom' && customDateFrom && customDateTo) return t.rawDate >= customDateFrom && t.rawDate <= customDateTo;
+          return true;
+        })());
+
+        if (matchesFilter) {
+          if (t.type === 'income') {
+            totalIncome += t.amount;
+          } else if (t.type === 'expense') {
+            totalExpense += t.amount;
+            expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
+          } else if (t.type === 'lend' && !t.resolved) {
+            totalExpense += t.amount; 
+          } else if (t.type === 'borrow' && !t.resolved) {
+            totalIncome += t.amount; 
+          }
         }
       });
       
-      const balance = totalIncome - totalExpense;
+      const netWorth = totalIncome - totalExpense;
       const sortedExpenses = Object.entries(expenseByCategory).sort((a, b) => b[1] - a[1]);
 
       const handleEntryChange = (index, field, value) => {
         const newEntries = [...entries];
         newEntries[index][field] = value;
-        if (field === 'type' && value !== 'transfer') {
-          newEntries[index].category = value === 'expense' ? 'Food' : 'Salary';
+        if (field === 'type' && value !== 'transfer' && value !== 'lend' && value !== 'borrow') {
+          newEntries[index].category = value === 'expense' ? expenseCategories[0] : incomeCategories[0];
         }
         setEntries(newEntries);
       };
@@ -231,44 +402,39 @@
 
       const handleAddTransaction = (e) => {
         e.preventDefault();
-        
         for (let i = 0; i < entries.length; i++) {
-          if (!entries[i].amount) return alert(`দয়া করে এন্ট্রি #${i + 1} এর পরিমাণ (Amount) লিখুন!`);
+          if (!entries[i].amount) return alert(`Please enter amount for entry #${i + 1}!`);
           if (entries[i].type === 'transfer' && entries[i].fromWallet === entries[i].toWallet) {
-            return alert(`এন্ট্রি #${i + 1}: সেন্ডার এবং রিসিভার ওয়ালেট একই হতে পারবে না!`);
+            return alert(`Entry #${i + 1}: Sender and receiver cannot be the same!`);
           }
         }
 
         const newTxs = entries.map((entry, index) => {
-          let finalTitle = entry.title.trim();
-          if (finalTitle === '') {
-            finalTitle = entry.type === 'transfer' ? 'ফান্ড ট্রান্সফার' : entry.category;
-          }
+          let defaultTitle = entry.type === 'transfer' ? 'Fund Transfer' : entry.type === 'lend' ? 'Lend' : entry.type === 'borrow' ? 'Borrow' : entry.category;
+          let finalTitle = entry.title.trim() || defaultTitle;
           const selectedDate = new Date(entry.date);
-          const displayDate = selectedDate.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+          const displayDate = selectedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
           return {
-            id: Date.now() + index, 
+            id: entry.id ? entry.id : (Date.now() + index), 
             title: finalTitle,
             amount: parseFloat(entry.amount),
             type: entry.type,
-            category: entry.type === 'transfer' ? 'Transfer' : entry.category,
+            category: entry.type === 'transfer' || entry.type === 'lend' || entry.type === 'borrow' ? 'General' : entry.category,
             wallet: entry.wallet,
             fromWallet: entry.fromWallet,
             toWallet: entry.toWallet,
             date: displayDate,
-            rawDate: entry.date
+            rawDate: entry.date,
+            resolved: false
           };
         });
 
-        const updatedTransactions = [...newTxs, ...transactions];
-        updatedTransactions.sort((a, b) => {
-          const timeA = new Date(a.rawDate).getTime();
-          const timeB = new Date(b.rawDate).getTime();
-          if (timeB === timeA) return b.id - a.id;
-          return timeB - timeA;
-        });
+        const editedIds = entries.filter(e => e.id).map(e => e.id);
+        const filteredTxs = transactions.filter(t => !editedIds.includes(t.id));
 
+        const updatedTransactions = [...newTxs, ...filteredTxs];
+        updatedTransactions.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
         setTransactions(updatedTransactions);
         setEntries([{ ...defaultEntry }]);
         setActiveTab('home'); 
@@ -276,165 +442,619 @@
 
       const handleDelete = (id) => { setTransactions(transactions.filter(tx => tx.id !== id)); };
 
+      const handleEdit = (tx) => {
+        setEntries([{
+          id: tx.id,
+          title: tx.title,
+          amount: tx.amount,
+          type: tx.type,
+          category: tx.category,
+          wallet: tx.wallet || allAccountOptions[0],
+          fromWallet: tx.fromWallet || wallets[0],
+          toWallet: tx.toWallet || wallets[1],
+          date: tx.rawDate || getTodayDate()
+        }]);
+        setActiveTab('transactions');
+      };
+
+      const handleResolveDebt = (tx) => {
+        if (!tx.resolved) {
+          setResolvingTx(tx);
+          setResolveWallet(allAccountOptions[0]);
+        } else {
+          const updated = transactions.map(t => t.id === tx.id ? { ...t, resolved: false } : t);
+          setTransactions(updated);
+        }
+      };
+
+      const confirmResolveDebt = () => {
+        if (!resolvingTx) return;
+        const updated = transactions.map(t => {
+          if (t.id === resolvingTx.id) {
+            return { ...t, resolved: true, resolveWallet: resolveWallet };
+          }
+          return t;
+        });
+        
+        const adjustmentTx = {
+          id: Date.now(),
+          title: (resolvingTx.type === 'lend' ? 'Lend Collection: ' : 'Borrow Payment: ') + resolvingTx.title,
+          amount: resolvingTx.amount,
+          type: resolvingTx.type === 'lend' ? 'income' : 'expense',
+          category: 'General',
+          wallet: resolveWallet,
+          date: resolvingTx.date,
+          rawDate: getTodayDate(),
+          resolved: true
+        };
+
+        setTransactions([adjustmentTx, ...updated]);
+        setResolvingTx(null);
+      };
+
+      const moveItem = (list, setList, index, direction) => {
+        const newList = [...list];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= newList.length) return;
+        const temp = newList[index];
+        newList[index] = newList[targetIndex];
+        newList[targetIndex] = temp;
+        setList(newList);
+      };
+
+      const handleItemEditPrompt = (list, setList, item, typeName) => {
+        setEditingItem({ listType: typeName, oldName: item });
+        setEditInputVal(item);
+      };
+
+      const saveEditedItem = () => {
+        if (!editingItem || !editInputVal.trim()) return;
+        const val = editInputVal.trim();
+        const { listType, oldName } = editingItem;
+
+        if (listType === 'wallet') {
+          if (wallets.includes(val)) return alert('Already exists!');
+          setWallets(wallets.map(w => w === oldName ? val : w));
+        } else if (listType === 'savings') {
+          if (savingsList.includes(val)) return alert('Already exists!');
+          setSavingsList(savingsList.map(s => s === oldName ? val : s));
+        } else if (listType === 'exp_cat') {
+          if (expenseCategories.includes(val)) return alert('Already exists!');
+          setExpenseCategories(expenseCategories.map(c => c === oldName ? val : c));
+        } else if (listType === 'inc_cat') {
+          if (incomeCategories.includes(val)) return alert('Already exists!');
+          setIncomeCategories(incomeCategories.map(c => c === oldName ? val : c));
+        }
+        setEditingItem(null);
+        setEditInputVal('');
+      };
+
+      const lendTransactions = transactions.filter(t => t.type === 'lend');
+      const borrowTransactions = transactions.filter(t => t.type === 'borrow');
+      const totalTxCount = filteredTransactions.length;
+
+      const renderGridByKey = (key) => {
+        switch (key) {
+          case 'wallets':
+            return visibleGrids.wallets && (
+              <div key="wallets" className="wallets-container">
+                {wallets.map((w, idx) => {
+                  const dotColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+                  return (
+                    <div key={w} className="wallet-card">
+                      <div className="wallet-dot" style={{ backgroundColor: dotColors[idx % dotColors.length] }}></div>
+                      <h4 style={{ fontSize: '16px' }}>{w}</h4>
+                      <div className="w-bal">৳ {(walletBalances[w] || 0).toLocaleString()}</div>
+                      <div className="w-tx">{txCountByWallet[w] || 0} transactions</div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          case 'savings':
+            return visibleGrids.savings && (
+              <div key="savings" className="wallets-container">
+                {savingsList.map((s, idx) => (
+                  <div key={s} className="wallet-card">
+                    <div className="wallet-dot" style={{ backgroundColor: '#14b8a6' }}></div>
+                    <h4 style={{ fontSize: '16px' }}>{s}</h4>
+                    <div className="w-bal">৳ {(walletBalances[s] || 0).toLocaleString()}</div>
+                    <div className="w-tx">{txCountByWallet[s] || 0} transactions</div>
+                  </div>
+                ))}
+              </div>
+            );
+          case 'netWorth':
+            return visibleGrids.netWorth && (
+              <div 
+                key="netWorth"
+                className="net-worth-card" 
+                onClick={() => setShowFilterModal(true)}
+                onContextMenu={(e) => { e.preventDefault(); setShowFilterModal(true); }}
+              >
+                <div className="top-row">
+                  <span>📈 Net Worth</span>
+                  <span>{globalFilter === 'monthly' ? 'Monthly' : globalFilter === 'yearly' ? 'Yearly' : globalFilter === 'custom' ? 'Custom' : 'All Time'} ▾</span>
+                </div>
+                <h2>৳ {netWorth.toLocaleString()} BDT</h2>
+                <div className="sub-row">
+                  <span>×{totalTxCount} transactions</span>
+                  <span>{globalFilter === 'all' ? 'All Time' : globalFilter === 'monthly' ? 'This Month' : globalFilter === 'yearly' ? 'This Year' : 'Custom Period'}</span>
+                </div>
+              </div>
+            );
+          case 'incExp':
+            return visibleGrids.incExp && (
+              <div key="incExp" className="inc-exp-grid">
+                <div className="ie-card expense">
+                  <div className="ie-title"><span className="material-icons" style={{fontSize: '15px', color: '#ef4444'}}>trending_down</span> Expense</div>
+                  <h3>৳ {totalExpense.toLocaleString()}</h3>
+                  <div className="ie-footer">
+                    <span>×{filteredTransactions.filter(t=>t.type==='expense').length}</span>
+                    <span>{globalFilter === 'all' ? 'All Time' : 'Filtered'}</span>
+                  </div>
+                </div>
+                <div className="ie-card income">
+                  <div className="ie-title"><span className="material-icons" style={{fontSize: '15px', color: '#10b981'}}>trending_up</span> Income</div>
+                  <h3>৳ {totalIncome.toLocaleString()}</h3>
+                  <div className="ie-footer">
+                    <span>×{filteredTransactions.filter(t=>t.type==='income').length}</span>
+                    <span>{globalFilter === 'all' ? 'All Time' : 'Filtered'}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          case 'lendBorrow':
+            return visibleGrids.lendBorrow && (
+              <div key="lendBorrow" className="grid-2-container">
+                <div className="net-worth-card" style={{margin: 0, padding: '14px'}} onClick={() => setModalType('lend_list')}>
+                  <div className="top-row" style={{marginBottom: '2px'}}>
+                    <span style={{color: '#3b82f6'}}>📥 Lent</span>
+                    <span style={{fontSize: '10px'}}>×{lendTransactions.length}</span>
+                  </div>
+                  <h3 style={{fontSize: '18px', color: '#2563eb', fontWeight: '700'}}>৳ {totalLend.toLocaleString()}</h3>
+                  <div className="sub-row" style={{marginTop: '4px', paddingTop: '2px'}}><span>Tap to view</span></div>
+                </div>
+                <div className="net-worth-card" style={{margin: 0, padding: '14px'}} onClick={() => setModalType('borrow_list')}>
+                  <div className="top-row" style={{marginBottom: '2px'}}>
+                    <span style={{color: '#7c3aed'}}>📤 Borrowed</span>
+                    <span style={{fontSize: '10px'}}>×{borrowTransactions.length}</span>
+                  </div>
+                  <h3 style={{fontSize: '18px', color: '#7c3aed', fontWeight: '700'}}>৳ {totalBorrow.toLocaleString()}</h3>
+                  <div className="sub-row" style={{marginTop: '4px', paddingTop: '2px'}}><span>Tap to view</span></div>
+                </div>
+              </div>
+            );
+          case 'categoryReport':
+            return visibleGrids.categoryReport && (
+              <div key="categoryReport" className="category-report">
+                <div className="section-title" style={{marginBottom: '8px'}}>Expense by Category</div>
+                {sortedExpenses.length === 0 ? (
+                  <p style={{ color: '#94a3b8', textAlign: 'center', fontSize: '12px' }}>No expense data available.</p>
+                ) : (
+                  sortedExpenses.map(([cat, amount]) => {
+                    const percentage = totalExpense > 0 ? ((amount / totalExpense) * 100).toFixed(1) : 0;
+                    return (
+                      <div key={cat} className="cat-bar-container">
+                        <div className="cat-header">
+                          <span>{cat}</span>
+                          <span>৳ {amount.toLocaleString()} ({percentage}%)</span>
+                        </div>
+                        <div className="cat-bg">
+                          <div className="cat-fill" style={{ width: `${percentage}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            );
+          case 'transactions':
+            return visibleGrids.transactions && (
+              <div key="transactions">
+                <div className="section-title">Recent Transactions</div>
+                {filteredTransactions.length === 0 && <p style={{color: '#94a3b8', textAlign: 'center'}}>No transactions found.</p>}
+                {filteredTransactions.map((tx) => (
+                  <SwipeableTransaction key={tx.id} tx={tx} onDelete={handleDelete} onEdit={handleEdit} onResolveDebt={handleResolveDebt} />
+                ))}
+              </div>
+            );
+          default:
+            return null;
+        }
+      };
+
       return (
         <div className="app-container">
           <header className="header">
-            <h1>My Finance</h1>
+            <h1>Hello</h1>
+            <div className="header-actions">
+              <button className="header-icon" title="Organize Home Grids" onClick={() => setShowCustomizeModal(true)}>
+                <span className="material-icons">tune</span>
+              </button>
+              <button className="header-icon" title="Settings" onClick={() => { setActiveTab('settings'); setSettingsView('menu'); }}>
+                <span className="material-icons">more_vert</span>
+              </button>
+            </div>
           </header>
 
           <main className="content">
             {activeTab === 'home' && (
               <div>
-                <div className="summary-card">
-                  <h3>মোট ব্যালেন্স</h3>
-                  <h2>৳ {balance.toLocaleString()}</h2>
-                  <div className="inc-exp">
-                    <div><h3>মোট আয়</h3><p>৳ {totalIncome.toLocaleString()}</p></div>
-                    <div><h3>মোট ব্যয়</h3><p>৳ {totalExpense.toLocaleString()}</p></div>
-                  </div>
-                </div>
-
-                <h3 className="section-title">ওয়ালেট ব্যালেন্স</h3>
-                <div className="wallets-container">
-                  <div className="wallet-card wallet-bkash"><h4>Bkash</h4><h3>৳ {walletBalances['Bkash'].toLocaleString()}</h3></div>
-                  <div className="wallet-card wallet-nagad"><h4>Nagad</h4><h3>৳ {walletBalances['Nagad'].toLocaleString()}</h3></div>
-                  <div className="wallet-card wallet-cash"><h4>Cash</h4><h3>৳ {walletBalances['Cash'].toLocaleString()}</h3></div>
-                  <div className="wallet-card wallet-bank"><h4>Bank</h4><h3>৳ {walletBalances['Bank'].toLocaleString()}</h3></div>
-                </div>
-
-                {sortedExpenses.length > 0 && (
-                  <div>
-                    <h3 className="section-title">ক্যাটাগরি অনুযায়ী ব্যয়</h3>
-                    <div className="category-report">
-                      {sortedExpenses.map(([cat, amount]) => {
-                        const percentage = ((amount / totalExpense) * 100).toFixed(1);
-                        return (
-                          <div key={cat} className="cat-bar-container">
-                            <div className="cat-header">
-                              <span>{cat}</span>
-                              <span>৳ {amount.toLocaleString()} ({percentage}%)</span>
-                            </div>
-                            <div className="cat-bg">
-                              <div className="cat-fill" style={{ width: `${percentage}%` }}></div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <h3 className="section-title">সাম্প্রতিক লেনদেন</h3>
-                {transactions.length === 0 && <p style={{color: '#777', textAlign: 'center'}}>কোনো লেনদেন নেই।</p>}
-                
-                {transactions.map((tx) => (
-                  <SwipeableTransaction key={tx.id} tx={tx} onDelete={handleDelete} />
-                ))}
+                {gridOrder.map(key => renderGridByKey(key))}
               </div>
             )}
             
             {activeTab === 'transactions' && (
-              <div className="page" style={{ padding: '15px' }}>
-                <h3 className="section-title" style={{ marginBottom: '15px' }}>নতুন লেনদেন যোগ করুন</h3>
+              <div className="page">
+                <h3 className="section-title" style={{ marginBottom: '12px' }}>{entries[0].id ? 'Edit Transaction' : 'Add New Transaction'}</h3>
                 <form onSubmit={handleAddTransaction}>
-                  
                   {entries.map((entry, index) => {
                     const currentCategories = entry.type === 'expense' ? expenseCategories : incomeCategories;
                     return (
                       <div key={index} className="entry-block">
                         <div className="entry-header">
-                          <span>এন্ট্রি #{index + 1}</span>
+                          <span>Entry #{index + 1}</span>
                           {entries.length > 1 && (
-                            <button type="button" className="btn-remove" onClick={() => handleRemoveEntry(index)}>বাতিল</button>
+                            <button type="button" className="btn-remove" onClick={() => handleRemoveEntry(index)}>Remove</button>
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
                           <div className="form-group" style={{ flex: 1 }}>
-                            <label>ধরন (Type)</label>
+                            <label>Type</label>
                             <select className="form-control" value={entry.type} onChange={(e) => handleEntryChange(index, 'type', e.target.value)}>
-                              <option value="expense">ব্যয় (Expense)</option>
-                              <option value="income">আয় (Income)</option>
-                              <option value="transfer">ট্রান্সফার (Transfer)</option>
+                              <option value="expense">Expense</option>
+                              <option value="income">Income</option>
+                              <option value="transfer">Transfer</option>
+                              <option value="lend">Lend</option>
+                              <option value="borrow">Borrow</option>
                             </select>
                           </div>
                           <div className="form-group" style={{ flex: 1 }}>
-                            <label>তারিখ (Date)</label>
+                            <label>Date</label>
                             <input type="date" className="form-control" value={entry.date} onChange={(e) => handleEntryChange(index, 'date', e.target.value)} />
                           </div>
                         </div>
 
                         {entry.type === 'transfer' ? (
-                          <div style={{ display: 'flex', gap: '10px' }}>
+                          <div style={{ display: 'flex', gap: '8px' }}>
                             <div className="form-group" style={{ flex: 1 }}>
-                              <label>কোথা হতে (From)</label>
+                              <label>From Wallet</label>
                               <select className="form-control" value={entry.fromWallet} onChange={(e) => handleEntryChange(index, 'fromWallet', e.target.value)}>
-                                <option value="Bank">Bank</option><option value="Bkash">Bkash</option><option value="Nagad">Nagad</option><option value="Cash">Cash</option>
+                                {allAccountOptions.map(acc => <option key={acc} value={acc}>{acc}</option>)}
                               </select>
                             </div>
                             <div className="form-group" style={{ flex: 1 }}>
-                              <label>কোথায় (To)</label>
+                              <label>To Wallet</label>
                               <select className="form-control" value={entry.toWallet} onChange={(e) => handleEntryChange(index, 'toWallet', e.target.value)}>
-                                <option value="Bkash">Bkash</option><option value="Nagad">Nagad</option><option value="Cash">Cash</option><option value="Bank">Bank</option>
+                                {allAccountOptions.map(acc => <option key={acc} value={acc}>{acc}</option>)}
                               </select>
                             </div>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', gap: '10px' }}>
+                          <div style={{ display: 'flex', gap: '8px' }}>
                             <div className="form-group" style={{ flex: 1 }}>
-                              <label>ওয়ালেট</label>
+                              <label>Wallet / Account</label>
                               <select className="form-control" value={entry.wallet} onChange={(e) => handleEntryChange(index, 'wallet', e.target.value)}>
-                                <option value="Bkash">Bkash</option><option value="Nagad">Nagad</option><option value="Cash">Cash</option><option value="Bank">Bank</option>
+                                {allAccountOptions.map(acc => <option key={acc} value={acc}>{acc}</option>)}
                               </select>
                             </div>
-                            <div className="form-group" style={{ flex: 1 }}>
-                              <label>ক্যাটাগরি</label>
-                              <select className="form-control" value={entry.category} onChange={(e) => handleEntryChange(index, 'category', e.target.value)}>
-                                {currentCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                              </select>
-                            </div>
+                            {entry.type !== 'lend' && entry.type !== 'borrow' && (
+                              <div className="form-group" style={{ flex: 1 }}>
+                                <label>Category</label>
+                                <select className="form-control" value={entry.category} onChange={(e) => handleEntryChange(index, 'category', e.target.value)}>
+                                  {currentCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                </select>
+                              </div>
+                            )}
                           </div>
                         )}
 
                         <div className="form-group">
-                          <label>বিবরণ (ঐচ্ছিক)</label>
-                          <input type="text" className="form-control" placeholder={entry.type === 'transfer' ? "যেমন: ফান্ড ট্রান্সফার" : "যেমন: ইন্টারনেট বিল"} value={entry.title} onChange={(e) => handleEntryChange(index, 'title', e.target.value)} />
+                          <label>Description (Note)</label>
+                          <input type="text" className="form-control" placeholder={entry.type === 'lend' ? "Lent to whom?" : entry.type === 'borrow' ? "Borrowed from whom?" : "e.g., Internet Bill"} value={entry.title} onChange={(e) => handleEntryChange(index, 'title', e.target.value)} />
                         </div>
 
                         <div className="form-group">
-                          <label>পরিমাণ (৳)</label>
-                          <input type="number" className="form-control" placeholder="যেমন: 500" value={entry.amount} onChange={(e) => handleEntryChange(index, 'amount', e.target.value)} />
+                          <label>Amount (৳)</label>
+                          <input type="number" className="form-control" placeholder="e.g., 500" value={entry.amount} onChange={(e) => handleEntryChange(index, 'amount', e.target.value)} />
                         </div>
                       </div>
                     );
                   })}
 
-                  <button type="button" className="btn-add-more" onClick={handleAddMore}>
-                    + আরেকটি এন্ট্রি যোগ করুন
-                  </button>
-
-                  <button type="submit" className="btn-submit">সবগুলো সেভ করুন</button>
+                  {!entries[0].id && <button type="button" className="btn-add-more" onClick={handleAddMore}>+ Add Another Entry</button>}
+                  <button type="submit" className="btn-submit">{entries[0].id ? 'Save Changes' : 'Save All Transactions'}</button>
                 </form>
               </div>
             )}
             
             {activeTab === 'settings' && (
               <div className="page">
-                <h3 className="section-title">সেটিংস</h3>
-                <button onClick={() => { if(window.confirm("সব ডেটা মুছবেন?")) { setTransactions([]); localStorage.clear(); } }} style={{backgroundColor: '#dc3545', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', width: '100%', marginTop: '20px'}}>সব ডেটা মুছুন</button>
+                {settingsView === 'menu' && (
+                  <div>
+                    <h3 className="section-title" style={{marginBottom: '14px'}}>Settings & Management</h3>
+                    
+                    <div className="settings-menu-item" onClick={() => setSettingsView('wallets')}>
+                      <div className="settings-menu-info">
+                        <span className="material-icons">account_balance_wallet</span>
+                        <h4>Manage Wallets</h4>
+                      </div>
+                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                    </div>
+
+                    <div className="settings-menu-item" onClick={() => setSettingsView('savings')}>
+                      <div className="settings-menu-info">
+                        <span className="material-icons">savings</span>
+                        <h4>Savings & Investments</h4>
+                      </div>
+                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                    </div>
+
+                    <div className="settings-menu-item" onClick={() => setSettingsView('exp_cat')}>
+                      <div className="settings-menu-info">
+                        <span className="material-icons">category</span>
+                        <h4>Expense Categories</h4>
+                      </div>
+                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                    </div>
+
+                    <div className="settings-menu-item" onClick={() => setSettingsView('inc_cat')}>
+                      <div className="settings-menu-info">
+                        <span className="material-icons">payments</span>
+                        <h4>Income Categories</h4>
+                      </div>
+                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                    </div>
+
+                    <button onClick={() => { if(window.confirm("Reset all data?")) { setTransactions([]); localStorage.clear(); window.location.reload(); } }} style={{backgroundColor: '#ef4444', color: 'white', padding: '12px', border: 'none', borderRadius: '10px', width: '100%', marginTop: '20px', fontWeight: 'bold', cursor: 'pointer'}}>Reset All Data</button>
+                  </div>
+                )}
+
+                {settingsView === 'wallets' && (
+                  <div>
+                    <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
+                    <h3 className="section-title">Wallet List</h3>
+                    {wallets.map((w, idx) => (
+                      <div key={w} className="settings-card-item">
+                        <div className="settings-info"><h4>{w}</h4><p>{txCountByWallet[w] || 0} transactions</p></div>
+                        <div className="settings-actions">
+                          <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons">edit</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(wallets, setWallets, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(wallets, setWallets, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
+                          <button className="icon-btn delete" onClick={() => {
+                            if ((txCountByWallet[w] || 0) > 0) return alert('Cannot delete wallet with transactions.');
+                            if (wallets.length <= 1) return alert('At least one wallet required.');
+                            if (window.confirm('Delete wallet?')) setWallets(wallets.filter(i => i !== w));
+                          }}><span className="material-icons">delete</span></button>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="add-row">
+                      <input type="text" className="form-control" placeholder="New wallet name" value={newWalletInput} onChange={(e) => setNewWalletInput(e.target.value)} />
+                      <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newWalletInput.trim()) { setWallets([...wallets, newWalletInput.trim()]); setNewWalletInput(''); } }}>Add</button>
+                    </div>
+                  </div>
+                )}
+
+                {settingsView === 'savings' && (
+                  <div>
+                    <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
+                    <h3 className="section-title">Savings & Investment Accounts</h3>
+                    {savingsList.map((s, idx) => (
+                      <div key={s} className="settings-card-item">
+                        <div className="settings-info"><h4>{s}</h4><p>{txCountByWallet[s] || 0} transactions</p></div>
+                        <div className="settings-actions">
+                          <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons">edit</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(savingsList, setSavingsList, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(savingsList, setSavingsList, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
+                          <button className="icon-btn delete" onClick={() => {
+                            if ((txCountByWallet[s] || 0) > 0) return alert('Cannot delete account with transactions.');
+                            if (window.confirm('Delete account?')) setSavingsList(savingsList.filter(i => i !== s));
+                          }}><span className="material-icons">delete</span></button>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="add-row">
+                      <input type="text" className="form-control" placeholder="New savings name" value={newSavingsInput} onChange={(e) => setNewSavingsInput(e.target.value)} />
+                      <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newSavingsInput.trim()) { setSavingsList([...savingsList, newSavingsInput.trim()]); setNewSavingsInput(''); } }}>Add</button>
+                    </div>
+                  </div>
+                )}
+
+                {settingsView === 'exp_cat' && (
+                  <div>
+                    <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
+                    <h3 className="section-title">Expense Categories</h3>
+                    {expenseCategories.map((c, idx) => (
+                      <div key={c} className="settings-card-item">
+                        <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
+                        <div className="settings-actions">
+                          <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons">edit</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(expenseCategories, setExpenseCategories, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(expenseCategories, setExpenseCategories, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
+                          <button className="icon-btn delete" onClick={() => {
+                            if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
+                            if (expenseCategories.length <= 1) return alert('At least one category required.');
+                            if (window.confirm('Delete category?')) setExpenseCategories(expenseCategories.filter(i => i !== c));
+                          }}><span className="material-icons">delete</span></button>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="add-row">
+                      <input type="text" className="form-control" placeholder="New expense category" value={newExpCatInput} onChange={(e) => setNewExpCatInput(e.target.value)} />
+                      <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newExpCatInput.trim()) { setExpenseCategories([...expenseCategories, newExpCatInput.trim()]); setNewExpCatInput(''); } }}>Add</button>
+                    </div>
+                  </div>
+                )}
+
+                {settingsView === 'inc_cat' && (
+                  <div>
+                    <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
+                    <h3 className="section-title">Income Categories</h3>
+                    {incomeCategories.map((c, idx) => (
+                      <div key={c} className="settings-card-item">
+                        <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
+                        <div className="settings-actions">
+                          <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons">edit</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(incomeCategories, setIncomeCategories, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
+                          <button className="icon-btn" onClick={() => moveItem(incomeCategories, setIncomeCategories, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
+                          <button className="icon-btn delete" onClick={() => {
+                            if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
+                            if (incomeCategories.length <= 1) return alert('At least one category required.');
+                            if (window.confirm('Delete category?')) setIncomeCategories(incomeCategories.filter(i => i !== c));
+                          }}><span className="material-icons">delete</span></button>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="add-row">
+                      <input type="text" className="form-control" placeholder="New income category" value={newIncCatInput} onChange={(e) => setNewIncCatInput(e.target.value)} />
+                      <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newIncCatInput.trim()) { setIncomeCategories([...incomeCategories, newIncCatInput.trim()]); setNewIncCatInput(''); } }}>Add</button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </main>
 
+          {/* Modal for Editing Item Name */}
+          {editingItem && (
+            <div className="modal-overlay" onClick={() => setEditingItem(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>Edit Name</h3>
+                <div className="form-group">
+                  <label>New Name</label>
+                  <input type="text" className="form-control" value={editInputVal} onChange={(e) => setEditInputVal(e.target.value)} />
+                </div>
+                <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={saveEditedItem}>Save</button>
+                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#94a3b8' }} onClick={() => setEditingItem(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Modal for Customize Home Grids & Ordering */}
+          {showCustomizeModal && (
+            <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: '15px', color: '#3b82f6' }}>Organize & Reorder Home Grids</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
+                  {gridOrder.map((key, idx) => {
+                    const labelNames = {
+                      wallets: 'Wallet Balance Grid',
+                      savings: 'Deposit & Investment Grid',
+                      netWorth: 'Total Balance / Net Worth Grid',
+                      incExp: 'Income & Expense Grid',
+                      lendBorrow: 'Lend & Borrow Grid',
+                      categoryReport: 'Category Expense Report',
+                      transactions: 'Recent Transactions List'
+                    };
+                    return (
+                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '8px 10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                          <input type="checkbox" checked={visibleGrids[key]} onChange={() => toggleGrid(key)} style={{ width: '16px', height: '16px' }} />
+                          {labelNames[key]}
+                        </label>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button className="icon-btn" onClick={() => moveGridOrder(idx, 'up')} style={{ width: '26px', height: '26px' }}><span className="material-icons" style={{ fontSize: '16px' }}>arrow_upward</span></button>
+                          <button className="icon-btn" onClick={() => moveGridOrder(idx, 'down')} style={{ width: '26px', height: '26px' }}><span className="material-icons" style={{ fontSize: '16px' }}>arrow_downward</span></button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button className="btn-submit" style={{ padding: '10px' }} onClick={() => setShowCustomizeModal(false)}>Done</button>
+              </div>
+            </div>
+          )}
+
+          {modalType && (
+            <div className="modal-overlay" onClick={() => setModalType(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>
+                  {modalType === 'lend_list' ? 'Lent List' : 'Borrowed List'}
+                </h3>
+                {((modalType === 'lend_list' ? lendTransactions : borrowTransactions).length === 0) ? (
+                  <p style={{ color: '#94a3b8', textAlign: 'center', padding: '15px 0' }}>No records found.</p>
+                ) : (
+                  (modalType === 'lend_list' ? lendTransactions : borrowTransactions).map(tx => (
+                    <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
+                      <div>
+                        <h4 style={{ fontSize: '13px', textDecoration: tx.resolved ? 'line-through' : 'none', color: '#0f172a' }}>{tx.title} {tx.resolved ? '[Resolved]' : ''}</h4>
+                        <p style={{ fontSize: '10px', color: '#94a3b8' }}>Wallet: {tx.wallet} • {tx.date}</p>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '13px', color: modalType === 'lend_list' ? '#2563eb' : '#7c3aed' }}>৳ {tx.amount.toLocaleString()}</span>
+                        <button 
+                          className="icon-btn" 
+                          title="Resolve"
+                          onClick={() => { handleResolveDebt(tx); }}
+                          style={{ background: tx.resolved ? '#10b981' : '#f1f5f9', color: tx.resolved ? 'white' : '#10b981', width: '28px', height: '28px' }}
+                        >
+                          <span className="material-icons" style={{ fontSize: '14px' }}>{tx.resolved ? 'done' : 'check'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <button className="btn-submit" style={{ marginTop: '16px', padding: '10px' }} onClick={() => setModalType(null)}>Close</button>
+              </div>
+            </div>
+          )}
+
+          {resolvingTx && (
+            <div className="modal-overlay" onClick={() => setResolvingTx(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>
+                  {resolvingTx.type === 'lend' ? 'Select wallet for collection:' : 'Select wallet for payment:'}
+                </h3>
+                <div className="form-group">
+                  <label>Choose Wallet</label>
+                  <select className="form-control" value={resolveWallet} onChange={(e) => setResolveWallet(e.target.value)}>
+                    {allAccountOptions.map(acc => <option key={acc} value={acc}>{acc}</option>)}
+                  </select>
+                </div>
+                <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={confirmResolveDebt}>Confirm</button>
+                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#94a3b8' }} onClick={() => setResolvingTx(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {showFilterModal && (
+            <div className="modal-overlay" onClick={() => setShowFilterModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>Select Time Period</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'monthly' ? '#3b82f6' : '#cbd5e1' }} onClick={() => { setGlobalFilter('monthly'); setShowFilterModal(false); }}>Monthly (Default)</button>
+                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'yearly' ? '#3b82f6' : '#cbd5e1' }} onClick={() => { setGlobalFilter('yearly'); setShowFilterModal(false); }}>Yearly</button>
+                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'all' ? '#3b82f6' : '#cbd5e1' }} onClick={() => { setGlobalFilter('all'); setShowFilterModal(false); }}>All Time</button>
+                </div>
+
+                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '10px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', display: 'block', marginBottom: '6px' }}>Custom Range:</label>
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+                    <input type="date" className="form-control" value={customDateFrom} onChange={(e) => setCustomDateFrom(e.target.value)} />
+                    <input type="date" className="form-control" value={customDateTo} onChange={(e) => setCustomDateTo(e.target.value)} />
+                  </div>
+                  <button className="btn-submit" style={{ padding: '8px', background: '#10b981', marginBottom: '8px' }} onClick={() => { if (customDateFrom && customDateTo) { setGlobalFilter('custom'); setShowFilterModal(false); } else { alert('Please select both dates'); } }}>Apply Custom</button>
+                </div>
+
+                <button className="btn-submit" style={{ padding: '8px', background: '#ef4444' }} onClick={() => setShowFilterModal(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
           <nav className="bottom-nav">
             <button className={activeTab === 'home' ? 'active' : ''} onClick={() => setActiveTab('home')}>
               <span className="material-icons">home</span>
+              Home
             </button>
-            <button className="btn-add-tx" onClick={() => setActiveTab('transactions')}>
+            <button className="btn-add-tx" onClick={() => { setActiveTab('transactions'); setEntries([{ ...defaultEntry }]); }}>
               <span className="material-icons">add</span>
             </button>
-            <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+            <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => { setActiveTab('settings'); setSettingsView('menu'); }}>
               <span className="material-icons">settings</span>
+              Settings
             </button>
           </nav>
         </div>
