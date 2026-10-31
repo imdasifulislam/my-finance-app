@@ -1,73 +1,93 @@
 
-const CACHE_NAME = 'orthogro-v3';
+const CACHE_NAME = 'orthogro-offline-v1';
 
-const APP_SHELL = [
-  '/',
-  '/index.html'
-];
-
-self.addEventListener('install', event => {
+// Install and cache the main app
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then((cache) => cache.add('/'))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', event => {
+// Activate and remove outdated app caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((name) => name.startsWith('orthogro-') &&
+                            name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', event => {
+// Network and offline request handling
+self.addEventListener('fetch', (event) => {
   const request = event.request;
 
   if (request.method !== 'GET') return;
 
+  // Handle app navigation
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then(response => {
+        .then((response) => {
           if (response.ok) {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache =>
-              cache.put('/index.html', copy)
-            );
+
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put('/', copy);
+            });
           }
+
           return response;
         })
         .catch(async () => {
-          return await caches.match(request) ||
-                 await caches.match('/index.html') ||
-                 await caches.match('/');
+          return (
+            await caches.match(request) ||
+            await caches.match('/') ||
+            new Response('OrthoGro is not available offline yet.', {
+              status: 503,
+              headers: {
+                'Content-Type': 'text/plain'
+              }
+            })
+          );
         })
     );
+
     return;
   }
 
+  // Cache scripts, stylesheets, fonts and images
   if (
-    ['script', 'style', 'font', 'image']
-    .includes(request.destination)
+    ['script', 'style', 'font', 'image'].includes(request.destination)
   ) {
     event.respondWith(
-      caches.match(request).then(cached => {
-        if (cached) return cached;
+      caches.match(request).then(async (cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
 
-        return fetch(request).then(response => {
+        try {
+          const response = await fetch(request);
+
           if (response.ok || response.type === 'opaque') {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache =>
-              cache.put(request, copy)
-            );
+
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, copy);
+            });
           }
+
           return response;
-        });
+
+        } catch (error) {
+          return new Response('', { status: 503 });
+        }
       })
     );
   }
