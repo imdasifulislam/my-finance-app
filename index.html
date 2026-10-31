@@ -98,7 +98,8 @@
     .settings-menu-info .material-icons { color: #16845B; font-size: 22px; }
     .settings-menu-info h4 { font-size: 14px; color: #102A43; font-weight: 600; }
 
-    .settings-card-item { background: #F6F8F7; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #E5EBE7; display: flex; align-items: center; justify-content: space-between; }
+    .settings-card-item { background: #F6F8F7; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #E5EBE7; display: flex; align-items: center; justify-content: space-between; cursor: grab; }
+    .settings-card-item:active { cursor: grabbing; }
     .settings-info h4 { font-size: 13px; color: #102A43; margin-bottom: 2px; font-weight: 600; }
     .settings-info p { font-size: 10px; color: #718096; }
     .settings-actions { display: flex; align-items: center; gap: 6px; }
@@ -169,7 +170,7 @@
     <div class="loading-container">
       <div class="loading-brand">OrthoGro</div>
       <div class="loading-tagline">Track • Save • Grow</div>
-      <div class="loading-sub">Personal Finance & wealth management.</div>
+      <div class="loading-sub">Personal Finance & Wealth Management</div>
       <div class="spinner" style="margin-top: 15px;"></div>
       <div style="margin-top: 12px; font-size: 13px; color: #718096; font-weight: 600;">Loading...</div>
     </div>
@@ -308,7 +309,10 @@
       const [editInputVal, setEditInputVal] = React.useState('');
       const [walletToCorrect, setWalletToCorrect] = React.useState(null);
       const [correctBalanceInput, setCorrectBalanceInput] = React.useState('');
-      const [draggedIndex, setDraggedIndex] = React.useState(null);
+      
+      const [draggedGridIndex, setDraggedGridIndex] = React.useState(null);
+      const [draggedItemIndex, setDraggedItemIndex] = React.useState(null);
+      const [draggedType, setDraggedType] = React.useState(null);
 
       const [currentUser, setCurrentUser] = React.useState(null);
 
@@ -344,6 +348,15 @@
             alert('Logout error: ' + error.message);
           }
         }
+      };
+
+      const handleManualSync = () => {
+        if (!currentUser) {
+          alert('Please sign in with Google first to sync data.');
+          return;
+        }
+        syncToCloud(transactions, wallets, savingsList, expenseCategories, incomeCategories);
+        alert('Data successfully synced with Cloud!');
       };
 
       const loadCloudData = async (uid) => {
@@ -406,22 +419,68 @@
         setVisibleGrids(prev => ({ ...prev, [key]: !prev[key] }));
       };
 
-      const handleDragStart = (index) => {
-        setDraggedIndex(index);
+      // General Drag and Drop Handlers
+      const handleDragStart = (e, index, type) => {
+        setDraggedType(type);
+        if (type === 'grid') setDraggedGridIndex(index);
+        else setDraggedItemIndex(index);
+        e.dataTransfer.effectAllowed = 'move';
       };
 
-      const handleDragOver = (e, index) => {
+      const handleDragOver = (e, index, type) => {
         e.preventDefault();
-        if (draggedIndex === null || draggedIndex === index) return;
-        const newOrder = [...gridOrder];
-        const item = newOrder.splice(draggedIndex, 1)[0];
-        newOrder.splice(index, 0, item);
-        setDraggedIndex(index);
-        setGridOrder(newOrder);
+        e.dataTransfer.dropEffect = 'move';
+        if (draggedType !== type) return;
+
+        if (type === 'grid') {
+          if (draggedGridIndex === null || draggedGridIndex === index) return;
+          const newOrder = [...gridOrder];
+          const item = newOrder.splice(draggedGridIndex, 1)[0];
+          newOrder.splice(index, 0, item);
+          setDraggedGridIndex(index);
+          setGridOrder(newOrder);
+        } else if (type === 'wallet') {
+          if (draggedItemIndex === null || draggedItemIndex === index) return;
+          const newList = [...wallets];
+          const item = newList.splice(draggedItemIndex, 1)[0];
+          newList.splice(index, 0, item);
+          setDraggedItemIndex(index);
+          setWallets(newList);
+        } else if (type === 'savings') {
+          if (draggedItemIndex === null || draggedItemIndex === index) return;
+          const newList = [...savingsList];
+          const item = newList.splice(draggedItemIndex, 1)[0];
+          newList.splice(index, 0, item);
+          setDraggedItemIndex(index);
+          setSavingsList(newList);
+        } else if (type === 'exp_cat') {
+          if (draggedItemIndex === null || draggedItemIndex === index) return;
+          const newList = [...expenseCategories];
+          const item = newList.splice(draggedItemIndex, 1)[0];
+          newList.splice(index, 0, item);
+          setDraggedItemIndex(index);
+          setExpenseCategories(newList);
+        } else if (type === 'inc_cat') {
+          if (draggedItemIndex === null || draggedItemIndex === index) return;
+          const newList = [...incomeCategories];
+          const item = newList.splice(draggedItemIndex, 1)[0];
+          newList.splice(index, 0, item);
+          setDraggedItemIndex(index);
+          setIncomeCategories(newList);
+        }
+      };
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        setDraggedGridIndex(null);
+        setDraggedItemIndex(null);
+        setDraggedType(null);
       };
 
       const handleDragEnd = () => {
-        setDraggedIndex(null);
+        setDraggedGridIndex(null);
+        setDraggedItemIndex(null);
+        setDraggedType(null);
       };
       
       const [transactions, setTransactions] = React.useState(() => {
@@ -713,6 +772,43 @@
         setCorrectBalanceInput('');
       };
 
+      const moveItem = (list, setList, index, direction) => {
+        const newList = [...list];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= newList.length) return;
+        const temp = newList[index];
+        newList[index] = newList[targetIndex];
+        newList[targetIndex] = temp;
+        setList(newList);
+      };
+
+      const handleItemEditPrompt = (list, setList, item, typeName) => {
+        setEditingItem({ listType: typeName, oldName: item });
+        setEditInputVal(item);
+      };
+
+      const saveEditedItem = () => {
+        if (!editingItem || !editInputVal.trim()) return;
+        const val = editInputVal.trim();
+        const { listType, oldName } = editingItem;
+
+        if (listType === 'wallet') {
+          if (wallets.includes(val)) return alert('Already exists!');
+          setWallets(wallets.map(w => w === oldName ? val : w));
+        } else if (listType === 'savings') {
+          if (savingsList.includes(val)) return alert('Already exists!');
+          setSavingsList(savingsList.map(s => s === oldName ? val : s));
+        } else if (listType === 'exp_cat') {
+          if (expenseCategories.includes(val)) return alert('Already exists!');
+          setExpenseCategories(expenseCategories.map(c => c === oldName ? val : c));
+        } else if (listType === 'inc_cat') {
+          if (incomeCategories.includes(val)) return alert('Already exists!');
+          setIncomeCategories(incomeCategories.map(c => c === oldName ? val : c));
+        }
+        setEditingItem(null);
+        setEditInputVal('');
+      };
+
       const lendTransactions = transactions.filter(t => t.type === 'lend');
       const borrowTransactions = transactions.filter(t => t.type === 'borrow');
       const totalTxCount = filteredTransactions.length;
@@ -994,14 +1090,14 @@
                       </div>
                     ) : (
                       <div className="settings-menu-item" style={{ background: '#E6FFFA', border: '1px solid #B2F5EA' }}>
-                        <div className="settings-menu-info">
+                        <div className="settings-menu-info" onClick={handleManualSync} style={{ flex: 1, cursor: 'pointer' }}>
                           <span className="material-icons" style={{ color: '#16845B' }}>cloud_done</span>
                           <div>
                             <h4 style={{ color: '#16845B' }}>Google Connected</h4>
                             <p style={{ fontSize: '10px', color: '#234E52' }}>{currentUser.email}</p>
                           </div>
                         </div>
-                        <span className="material-icons" style={{color: '#16845B'}}>sync</span>
+                        <span className="material-icons" onClick={handleManualSync} style={{color: '#16845B', cursor: 'pointer', padding: '5px'}} title="Sync Now">sync</span>
                       </div>
                     )}
 
@@ -1054,22 +1150,31 @@
                 {settingsView === 'wallets' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Wallet List</h3>
-                    {wallets.map((w, idx) => (
-                      <div key={w} className="settings-card-item">
-                        <div className="settings-info"><h4>{w}</h4><p>{txCountByWallet[w] || 0} transactions</p></div>
-                        <div className="settings-actions">
-                          <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons">edit</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(wallets, setWallets, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(wallets, setWallets, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
-                          <button className="icon-btn delete" onClick={() => {
-                            if ((txCountByWallet[w] || 0) > 0) return alert('Cannot delete wallet with transactions.');
-                            if (wallets.length <= 1) return alert('At least one wallet required.');
-                            if (window.confirm('Delete wallet?')) setWallets(wallets.filter(i => i !== w));
-                          }}><span className="material-icons">delete</span></button>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '4px' }}>Wallet List</h3>
+                    <p style={{ fontSize: '11px', color: '#718096', marginBottom: '10px' }}>Drag and drop to reorder wallets.</p>
+                    <div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+                      {wallets.map((w, idx) => (
+                        <div 
+                          key={w} 
+                          draggable 
+                          onDragStart={(e) => handleDragStart(e, idx, 'wallet')}
+                          onDragOver={(e) => handleDragOver(e, idx, 'wallet')}
+                          onDragEnd={handleDragEnd}
+                          className="settings-card-item"
+                        >
+                          <div className="settings-info"><h4>{w}</h4><p>{txCountByWallet[w] || 0} transactions</p></div>
+                          <div className="settings-actions">
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(wallets, setWallets, w, 'wallet')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            <button className="icon-btn delete" onClick={() => {
+                              if ((txCountByWallet[w] || 0) > 0) return alert('Cannot delete wallet with transactions.');
+                              if (wallets.length <= 1) return alert('At least one wallet required.');
+                              if (window.confirm('Delete wallet?')) setWallets(wallets.filter(i => i !== w));
+                            }}><span className="material-icons">delete</span></button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                     <div className="add-row">
                       <input type="text" className="form-control" placeholder="New wallet name" value={newWalletInput} onChange={(e) => setNewWalletInput(e.target.value)} />
                       <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newWalletInput.trim()) { setWallets([...wallets, newWalletInput.trim()]); setNewWalletInput(''); } }}>Add</button>
@@ -1080,21 +1185,30 @@
                 {settingsView === 'savings' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Savings & Investment Accounts</h3>
-                    {savingsList.map((s, idx) => (
-                      <div key={s} className="settings-card-item">
-                        <div className="settings-info"><h4>{s}</h4><p>{txCountByWallet[s] || 0} transactions</p></div>
-                        <div className="settings-actions">
-                          <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons">edit</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(savingsList, setSavingsList, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(savingsList, setSavingsList, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
-                          <button className="icon-btn delete" onClick={() => {
-                            if ((txCountByWallet[s] || 0) > 0) return alert('Cannot delete account with transactions.');
-                            if (window.confirm('Delete account?')) setSavingsList(savingsList.filter(i => i !== s));
-                          }}><span className="material-icons">delete</span></button>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '4px' }}>Savings & Investments</h3>
+                    <p style={{ fontSize: '11px', color: '#718096', marginBottom: '10px' }}>Drag and drop to reorder accounts.</p>
+                    <div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+                      {savingsList.map((s, idx) => (
+                        <div 
+                          key={s} 
+                          draggable 
+                          onDragStart={(e) => handleDragStart(e, idx, 'savings')}
+                          onDragOver={(e) => handleDragOver(e, idx, 'savings')}
+                          onDragEnd={handleDragEnd}
+                          className="settings-card-item"
+                        >
+                          <div className="settings-info"><h4>{s}</h4><p>{txCountByWallet[s] || 0} transactions</p></div>
+                          <div className="settings-actions">
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(savingsList, setSavingsList, s, 'savings')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            <button className="icon-btn delete" onClick={() => {
+                              if ((txCountByWallet[s] || 0) > 0) return alert('Cannot delete account with transactions.');
+                              if (window.confirm('Delete account?')) setSavingsList(savingsList.filter(i => i !== s));
+                            }}><span className="material-icons">delete</span></button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                     <div className="add-row">
                       <input type="text" className="form-control" placeholder="New savings name" value={newSavingsInput} onChange={(e) => setNewSavingsInput(e.target.value)} />
                       <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newSavingsInput.trim()) { setSavingsList([...savingsList, newSavingsInput.trim()]); setNewSavingsInput(''); } }}>Add</button>
@@ -1105,22 +1219,31 @@
                 {settingsView === 'exp_cat' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Expense Categories</h3>
-                    {expenseCategories.map((c, idx) => (
-                      <div key={c} className="settings-card-item">
-                        <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
-                        <div className="settings-actions">
-                          <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons">edit</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(expenseCategories, setExpenseCategories, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(expenseCategories, setExpenseCategories, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
-                          <button className="icon-btn delete" onClick={() => {
-                            if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
-                            if (expenseCategories.length <= 1) return alert('At least one category required.');
-                            if (window.confirm('Delete category?')) setExpenseCategories(expenseCategories.filter(i => i !== c));
-                          }}><span className="material-icons">delete</span></button>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '4px' }}>Expense Categories</h3>
+                    <p style={{ fontSize: '11px', color: '#718096', marginBottom: '10px' }}>Drag and drop to reorder categories.</p>
+                    <div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+                      {expenseCategories.map((c, idx) => (
+                        <div 
+                          key={c} 
+                          draggable 
+                          onDragStart={(e) => handleDragStart(e, idx, 'exp_cat')}
+                          onDragOver={(e) => handleDragOver(e, idx, 'exp_cat')}
+                          onDragEnd={handleDragEnd}
+                          className="settings-card-item"
+                        >
+                          <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
+                          <div className="settings-actions">
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(expenseCategories, setExpenseCategories, c, 'exp_cat')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            <button className="icon-btn delete" onClick={() => {
+                              if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
+                              if (expenseCategories.length <= 1) return alert('At least one category required.');
+                              if (window.confirm('Delete category?')) setExpenseCategories(expenseCategories.filter(i => i !== c));
+                            }}><span className="material-icons">delete</span></button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                     <div className="add-row">
                       <input type="text" className="form-control" placeholder="New expense category" value={newExpCatInput} onChange={(e) => setNewExpCatInput(e.target.value)} />
                       <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newExpCatInput.trim()) { setExpenseCategories([...expenseCategories, newExpCatInput.trim()]); setNewExpCatInput(''); } }}>Add</button>
@@ -1131,22 +1254,31 @@
                 {settingsView === 'inc_cat' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Income Categories</h3>
-                    {incomeCategories.map((c, idx) => (
-                      <div key={c} className="settings-card-item">
-                        <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
-                        <div className="settings-actions">
-                          <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons">edit</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(incomeCategories, setIncomeCategories, idx, 'up')}><span className="material-icons">arrow_upward</span></button>
-                          <button className="icon-btn" onClick={() => moveItem(incomeCategories, setIncomeCategories, idx, 'down')}><span className="material-icons">arrow_downward</span></button>
-                          <button className="icon-btn delete" onClick={() => {
-                            if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
-                            if (incomeCategories.length <= 1) return alert('At least one category required.');
-                            if (window.confirm('Delete category?')) setIncomeCategories(incomeCategories.filter(i => i !== c));
-                          }}><span className="material-icons">delete</span></button>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '4px' }}>Income Categories</h3>
+                    <p style={{ fontSize: '11px', color: '#718096', marginBottom: '10px' }}>Drag and drop to reorder categories.</p>
+                    <div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+                      {incomeCategories.map((c, idx) => (
+                        <div 
+                          key={c} 
+                          draggable 
+                          onDragStart={(e) => handleDragStart(e, idx, 'inc_cat')}
+                          onDragOver={(e) => handleDragOver(e, idx, 'inc_cat')}
+                          onDragEnd={handleDragEnd}
+                          className="settings-card-item"
+                        >
+                          <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
+                          <div className="settings-actions">
+                            <button className="icon-btn" onClick={() => handleItemEditPrompt(incomeCategories, setIncomeCategories, c, 'inc_cat')} title="Edit"><span className="material-icons">edit</span></button>
+                            <span className="material-icons" style={{ color: '#A0AEC0', cursor: 'grab', fontSize: '20px' }}>drag_indicator</span>
+                            <button className="icon-btn delete" onClick={() => {
+                              if ((txCountByCategory[c] || 0) > 0) return alert('Cannot delete category with transactions.');
+                              if (incomeCategories.length <= 1) return alert('At least one category required.');
+                              if (window.confirm('Delete category?')) setIncomeCategories(incomeCategories.filter(i => i !== c));
+                            }}><span className="material-icons">delete</span></button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                     <div className="add-row">
                       <input type="text" className="form-control" placeholder="New income category" value={newIncCatInput} onChange={(e) => setNewIncCatInput(e.target.value)} />
                       <button type="button" className="btn-submit" style={{width: '90px', padding: '8px', fontSize: '13px'}} onClick={() => { if(newIncCatInput.trim()) { setIncomeCategories([...incomeCategories, newIncCatInput.trim()]); setNewIncCatInput(''); } }}>Add</button>
@@ -1176,7 +1308,7 @@
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h3 style={{ marginBottom: '8px', color: '#16845B' }}>Correct Balance: {walletToCorrect}</h3>
                 <p style={{ fontSize: '12px', color: '#718096', marginBottom: '12px' }}>
-                  Current Recorded Balance: <strong style={{ color: '#102A43' }}>৳ {(walletBalances[walletToCorrect] || 0).toLocaleString()}</strong>
+                  Previous Balance: <strong style={{ color: '#102A43' }}>৳ {(walletBalances[walletToCorrect] || 0).toLocaleString()}</strong>
                 </p>
                 <div className="form-group">
                   <label>New Correct Balance (৳)</label>
@@ -1193,7 +1325,7 @@
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h3 style={{ marginBottom: '10px', color: '#16845B' }}>Organize & Reorder Home Grids</h3>
                 <p style={{ fontSize: '11px', color: '#718096', marginBottom: '14px' }}>Drag and drop items to reorder them on your home screen.</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '15px' }} onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
                   {gridOrder.map((key, idx) => {
                     const labelNames = {
                       netWorth: 'Net Worth Grid',
@@ -1208,8 +1340,8 @@
                       <div 
                         key={key} 
                         draggable
-                        onDragStart={() => handleDragStart(idx)}
-                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDragStart={(e) => handleDragStart(e, idx, 'grid')}
+                        onDragOver={(e) => handleDragOver(e, idx, 'grid')}
                         onDragEnd={handleDragEnd}
                         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F6F8F7', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E5EBE7', cursor: 'grab', userSelect: 'none' }}
                       >
