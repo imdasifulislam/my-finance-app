@@ -13,6 +13,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
   
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
@@ -172,6 +177,19 @@
   </div>
 
   <script>
+    // Firebase Initialization with your real config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBkAWyNjfN9ZBASMNxJjMwQVYN7XwC0QtE",
+      authDomain: "arthogrow-68a0a.firebaseapp.com",
+      projectId: "arthogrow-68a0a",
+      storageBucket: "arthogrow-68a0a.firebasestorage.app",
+      messagingSenderId: "923394306537",
+      appId: "1:923394306537:web:873bf59897392df699db78"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
@@ -278,24 +296,73 @@
       const [editingItem, setEditingItem] = React.useState(null); 
       const [editInputVal, setEditInputVal] = React.useState('');
 
-      // Google Account Sync State
-      const [googleUser, setGoogleUser] = React.useState(() => localStorage.getItem('arthogrow_google_user') || '');
+      // Firebase Auth & Cloud Sync State
+      const [currentUser, setCurrentUser] = React.useState(null);
 
-      const handleGoogleLogin = () => {
-        const email = prompt("Enter your Google Account (Gmail) for Cloud Sync:", "user@gmail.com");
-        if (email && email.includes('@')) {
-          localStorage.setItem('arthogrow_google_user', email);
-          setGoogleUser(email);
-          alert('Successfully signed in with ' + email);
-        } else {
-          alert('Please enter a valid Gmail address.');
+      React.useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+          if (user) {
+            setCurrentUser(user);
+            loadCloudData(user.uid);
+          } else {
+            setCurrentUser(null);
+          }
+        });
+        return () => unsubscribe();
+      }, []);
+
+      const handleGoogleLogin = async () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+          const result = await auth.signInWithPopup(provider);
+          setCurrentUser(result.user);
+          alert('Successfully signed in with ' + result.user.email);
+        } catch (error) {
+          alert('Login failed: ' + error.message);
         }
       };
 
-      const handleGoogleLogout = () => {
-        if (window.confirm("Sign out from Google account? Local data remains safe.")) {
-          localStorage.removeItem('arthogrow_google_user');
-          setGoogleUser('');
+      const handleGoogleLogout = async () => {
+        if (window.confirm("Sign out from Google account?")) {
+          try {
+            await auth.signOut();
+            setCurrentUser(null);
+          } catch (error) {
+            alert('Logout error: ' + error.message);
+          }
+        }
+      };
+
+      const loadCloudData = async (uid) => {
+        try {
+          const docRef = db.collection('users').doc(uid);
+          const doc = await docRef.get();
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.transactions) setTransactions(data.transactions);
+            if (data.wallets) setWallets(data.wallets);
+            if (data.savingsList) setSavingsList(data.savingsList);
+            if (data.expenseCategories) setExpenseCategories(data.expenseCategories);
+            if (data.incomeCategories) setIncomeCategories(data.incomeCategories);
+          }
+        } catch (e) {
+          console.error("Error loading cloud data:", e);
+        }
+      };
+
+      const syncToCloud = async (newData, newWallets, newSavings, newExpCats, newIncCats) => {
+        if (!currentUser) return;
+        try {
+          await db.collection('users').doc(currentUser.uid).set({
+            transactions: newData || transactions,
+            wallets: newWallets || wallets,
+            savingsList: newSavings || savingsList,
+            expenseCategories: newExpCats || expenseCategories,
+            incomeCategories: newIncCats || incomeCategories,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        } catch (e) {
+          console.error("Cloud sync error:", e);
         }
       };
       
@@ -351,7 +418,6 @@
         return saved ? JSON.parse(saved) : ['Bank', 'Bkash', 'Nagad', 'Cash'];
       });
 
-      // Savings & Investment accounts updated to English
       const [savingsList, setSavingsList] = React.useState(() => {
         const saved = localStorage.getItem('arthogrow_savings');
         return saved ? JSON.parse(saved) : ['Savings', 'Samity', 'Investment'];
@@ -372,11 +438,30 @@
       const [newExpCatInput, setNewExpCatInput] = React.useState('');
       const [newIncCatInput, setNewIncCatInput] = React.useState('');
 
-      React.useEffect(() => { localStorage.setItem('arthogrow_data', JSON.stringify(transactions)); }, [transactions]);
-      React.useEffect(() => { localStorage.setItem('arthogrow_wallets', JSON.stringify(wallets)); }, [wallets]);
-      React.useEffect(() => { localStorage.setItem('arthogrow_savings', JSON.stringify(savingsList)); }, [savingsList]);
-      React.useEffect(() => { localStorage.setItem('arthogrow_exp_cats', JSON.stringify(expenseCategories)); }, [expenseCategories]);
-      React.useEffect(() => { localStorage.setItem('arthogrow_inc_cats', JSON.stringify(incomeCategories)); }, [incomeCategories]);
+      React.useEffect(() => { 
+        localStorage.setItem('arthogrow_data', JSON.stringify(transactions)); 
+        syncToCloud(transactions, null, null, null, null);
+      }, [transactions]);
+
+      React.useEffect(() => { 
+        localStorage.setItem('arthogrow_wallets', JSON.stringify(wallets)); 
+        syncToCloud(null, wallets, null, null, null);
+      }, [wallets]);
+
+      React.useEffect(() => { 
+        localStorage.setItem('arthogrow_savings', JSON.stringify(savingsList)); 
+        syncToCloud(null, null, savingsList, null, null);
+      }, [savingsList]);
+
+      React.useEffect(() => { 
+        localStorage.setItem('arthogrow_exp_cats', JSON.stringify(expenseCategories)); 
+        syncToCloud(null, null, null, expenseCategories, null);
+      }, [expenseCategories]);
+
+      React.useEffect(() => { 
+        localStorage.setItem('arthogrow_inc_cats', JSON.stringify(incomeCategories)); 
+        syncToCloud(null, null, null, null, incomeCategories);
+      }, [incomeCategories]);
 
       const getTodayDate = () => {
         const now = new Date();
@@ -758,7 +843,7 @@
           <header className="header">
             <div>
               <h1>ArthoGrow</h1>
-              <p style={{ fontSize: '11px', color: '#718096' }}>{googleUser ? googleUser : 'Offline Mode'}</p>
+              <p style={{ fontSize: '11px', color: '#718096' }}>{currentUser ? currentUser.email : 'Offline Mode'}</p>
             </div>
             <div className="header-actions">
               <button className="header-icon" title="Organize Home Grids" onClick={() => setShowCustomizeModal(true)}>
@@ -865,8 +950,8 @@
                   <div>
                     <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43', marginBottom: '14px' }}>Settings & Management</h3>
                     
-                    {/* Google Login / Sync Option */}
-                    {!googleUser ? (
+                    {/* Firebase Google Login / Sync Option */}
+                    {!currentUser ? (
                       <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#EBF8FF', border: '1px solid #BEE3F8' }}>
                         <div className="settings-menu-info">
                           <span className="material-icons" style={{ color: '#2B6CB0' }}>account_circle</span>
@@ -875,12 +960,12 @@
                         <span className="material-icons" style={{color: '#2B6CB0'}}>login</span>
                       </div>
                     ) : (
-                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#E6FFFA', border: '1px solid #B2F5EA' }}>
+                      <div className="settings-menu-item" style={{ background: '#E6FFFA', border: '1px solid #B2F5EA' }}>
                         <div className="settings-menu-info">
                           <span className="material-icons" style={{ color: '#16845B' }}>cloud_done</span>
                           <div>
                             <h4 style={{ color: '#16845B' }}>Google Connected</h4>
-                            <p style={{ fontSize: '10px', color: '#234E52' }}>{googleUser}</p>
+                            <p style={{ fontSize: '10px', color: '#234E52' }}>{currentUser.email}</p>
                           </div>
                         </div>
                         <span className="material-icons" style={{color: '#16845B'}}>sync</span>
@@ -919,7 +1004,7 @@
                       <span className="material-icons" style={{color: '#A0AEC0'}}>chevron_right</span>
                     </div>
 
-                    {googleUser && (
+                    {currentUser && (
                       <div className="settings-menu-item" onClick={handleGoogleLogout} style={{ background: '#FFF5F5', border: '1px solid #FED7D7' }}>
                         <div className="settings-menu-info">
                           <span className="material-icons" style={{ color: '#D94848' }}>logout</span>
