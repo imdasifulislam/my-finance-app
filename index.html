@@ -3,144 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Finance App</title>
+  <title>ArthoGrow - Personal Finance</title>
   
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22My%20Finance%20App%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23e8edf5%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
-  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22ArthoGrow%22%2C%22short_name%22%3A%22Finance%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F6F8F7%22%2C%22theme_color%22%3A%22%2316845B%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fwallet.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <meta name="theme-color" content="#16845B">
 
   <!-- React & Babel Production CDNs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
   
-  <!-- Firebase SDKs for Google Login & Cloud Backup -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #e8edf5; color: #1e293b; overflow-x: hidden; }
+    body { background-color: #F6F8F7; color: #102A43; overflow-x: hidden; }
     .app-container { display: flex; flex-direction: column; height: 100vh; }
     
-    .header { background-color: #e8edf5; color: #0f172a; padding: 18px 16px 10px 16px; display: flex; justify-content: space-between; align-items: center; user-select: none; }
-    .header h1 { font-size: 26px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
-    .header-icon { background: rgba(255, 255, 255, 0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); cursor: pointer; color: #475569; }
+    .header { background-color: #F6F8F7; color: #102A43; padding: 18px 16px 10px 16px; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+    .header h1 { font-size: 24px; font-weight: 700; color: #102A43; letter-spacing: -0.5px; }
+    .header-icon { background: #FFFFFF; border: 1px solid #E5EBE7; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.02); cursor: pointer; color: #718096; }
 
     .content { flex: 1; padding: 10px 16px; overflow-y: auto; padding-bottom: 90px; overflow-x: hidden; }
     
-    .net-worth-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 16px; border-radius: 18px; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); cursor: pointer; border: 1px solid #cbd5e1; }
-    .net-worth-card .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; color: #64748b; font-size: 13px; font-weight: 600; }
-    .net-worth-card h2 { font-size: 26px; color: #10b981; margin-bottom: 8px; font-weight: 700; }
-    .net-worth-card .sub-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 8px; }
+    .section-heading { font-size: 14px; font-weight: 700; color: #102A43; margin-bottom: 8px; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+
+    .net-worth-card { background: #102A43; color: #FFFFFF; padding: 18px; border-radius: 20px; margin-bottom: 12px; box-shadow: 0 6px 20px rgba(16, 42, 67, 0.15); cursor: pointer; border: none; }
+    .net-worth-card .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: #A0AEC0; font-size: 13px; font-weight: 600; }
+    .net-worth-card h2 { font-size: 28px; color: #FFFFFF; margin-bottom: 12px; font-weight: 700; }
+    .net-worth-card .sub-row { display: flex; justify-content: space-between; font-size: 11px; color: #A0AEC0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
 
     .inc-exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .ie-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 14px; border-radius: 18px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; }
-    .ie-card .ie-title { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
-    .ie-card.expense h3 { color: #ef4444; font-size: 20px; font-weight: 700; }
-    .ie-card.income h3 { color: #10b981; font-size: 20px; font-weight: 700; }
-    .ie-card .ie-footer { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 4px; }
+    .ie-card { background: #FFFFFF; padding: 16px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #E5EBE7; }
+    .ie-card .ie-title { font-size: 12px; font-weight: 600; color: #718096; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+    .ie-card.expense h3 { color: #D94848; font-size: 20px; font-weight: 700; }
+    .ie-card.income h3 { color: #16845B; font-size: 20px; font-weight: 700; }
+    .ie-card .ie-footer { display: flex; justify-content: space-between; font-size: 10px; color: #A0AEC0; margin-top: 8px; border-top: 1px solid #F6F8F7; padding-top: 6px; }
     
-    .wallets-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; padding-right: 10px; }
+    .wallets-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; padding-right: 10px; }
     .wallets-container::-webkit-scrollbar { display: none; }
     
-    .wallet-card { min-width: 145px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 14px; border-radius: 18px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; cursor: pointer; flex-shrink: 0; position: relative; }
-    .wallet-card h4 { font-size: 15px; color: #0f172a; margin-bottom: 2px; font-weight: 700; }
-    .wallet-card .w-bal { font-size: 16px; font-weight: 700; color: #10b981; margin-bottom: 4px; }
-    .wallet-card .w-tx { font-size: 10px; color: #94a3b8; }
-    .wallet-dot { position: absolute; top: 14px; right: 14px; width: 8px; height: 8px; border-radius: 50%; }
+    .wallet-card { min-width: 145px; background: #FFFFFF; padding: 16px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #E5EBE7; cursor: pointer; flex-shrink: 0; position: relative; }
+    .wallet-card h4 { font-size: 14px; color: #102A43; margin-bottom: 4px; font-weight: 700; }
+    .wallet-card .w-bal { font-size: 16px; font-weight: 700; color: #16845B; margin-bottom: 4px; }
+    .wallet-card .w-tx { font-size: 10px; color: #718096; }
+    .wallet-dot { position: absolute; top: 16px; right: 16px; width: 8px; height: 8px; border-radius: 50%; }
 
     .grid-2-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
-    .category-report { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 16px; border-radius: 18px; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; }
+    .category-report { background: #FFFFFF; padding: 18px; border-radius: 18px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #E5EBE7; }
     .cat-bar-container { margin-bottom: 10px; }
     .cat-bar-container:last-child { margin-bottom: 0; }
-    .cat-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 3px; }
-    .cat-bg { background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; }
-    .cat-fill { background: #3b82f6; height: 100%; border-radius: 3px; }
+    .cat-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #718096; margin-bottom: 4px; }
+    .cat-bg { background: #E5EBE7; height: 6px; border-radius: 3px; overflow: hidden; }
+    .cat-fill { background: #16845B; height: 100%; border-radius: 3px; }
 
-    .t-item { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 12px 16px; border-radius: 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03); border: 1px solid #cbd5e1; }
-    .t-info h4 { font-size: 13px; color: #0f172a; margin-bottom: 2px; font-weight: 600; }
-    .t-info p { font-size: 10px; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
-    .t-tag { font-size: 9px; background: #e2e8f0; padding: 2px 5px; border-radius: 4px; color: #475569; font-weight: 600; }
+    .t-item { background: #FFFFFF; padding: 14px 16px; border-radius: 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02); border: 1px solid #E5EBE7; }
+    .t-info h4 { font-size: 13px; color: #102A43; margin-bottom: 2px; font-weight: 600; }
+    .t-info p { font-size: 10px; color: #718096; display: flex; align-items: center; gap: 4px; }
+    .t-tag { font-size: 9px; background: #E5EBE7; padding: 2px 6px; border-radius: 4px; color: #718096; font-weight: 600; }
     .t-amount { font-size: 14px; font-weight: bold; text-align: right; }
-    .income { color: #10b981; }
-    .expense { color: #ef4444; }
-    .transfer { color: #3b82f6; }
+    .income { color: #16845B; }
+    .expense { color: #D94848; }
+    .transfer { color: #2B6CB0; }
 
-    .page { background: #ffffff; padding: 18px; border-radius: 18px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #cbd5e1; }
+    .page { background: #FFFFFF; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #E5EBE7; }
     
-    .entry-block { background: #f8fafc; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px dashed #cbd5e0; position: relative; }
-    .entry-header { font-size: 13px; font-weight: bold; color: #3b82f6; margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .btn-remove { background: #ef4444; color: white; border: none; padding: 3px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; }
-    .btn-add-more { background: #f1f5f9; color: #475569; width: 100%; padding: 10px; border: 1px dashed #cbd5e0; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 12px; cursor: pointer; }
+    .entry-block { background: #F6F8F7; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px dashed #CBD5E0; position: relative; }
+    .entry-header { font-size: 13px; font-weight: bold; color: #16845B; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .btn-remove { background: #D94848; color: white; border: none; padding: 3px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    .btn-add-more { background: #E5EBE7; color: #718096; width: 100%; padding: 10px; border: 1px dashed #CBD5E0; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 12px; cursor: pointer; }
     
     .form-group { margin-bottom: 10px; }
-    .form-group label { display: block; margin-bottom: 3px; font-size: 12px; color: #475569; font-weight: 600; }
-    .form-control { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 13px; background: white; color: #1e293b; }
-    .btn-submit { width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); }
+    .form-group label { display: block; margin-bottom: 3px; font-size: 12px; color: #718096; font-weight: 600; }
+    .form-control { width: 100%; padding: 9px 10px; border: 1px solid #E5EBE7; border-radius: 8px; font-size: 13px; background: #FFFFFF; color: #102A43; }
+    .btn-submit { width: 100%; padding: 12px; background-color: #16845B; color: white; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(22, 132, 91, 0.25); }
     
-    .bottom-nav { display: flex; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #cbd5e1; position: fixed; bottom: 0; width: 100%; height: 68px; z-index: 100; align-items: center; justify-content: space-around; box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.04); }
-    .bottom-nav button { flex: 1; border: none; background: none; color: #94a3b8; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; font-size: 10px; gap: 2px; }
+    .bottom-nav { display: flex; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #E5EBE7; position: fixed; bottom: 0; width: 100%; height: 68px; z-index: 100; align-items: center; justify-content: space-around; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04); }
+    .bottom-nav button { flex: 1; border: none; background: none; color: #718096; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; font-size: 10px; gap: 2px; }
     .bottom-nav button .material-icons { font-size: 22px; }
-    .bottom-nav button.active { color: #3b82f6; font-weight: 600; }
+    .bottom-nav button.active { color: #16845B; font-weight: 600; }
     
-    .btn-add-tx { position: relative; top: -16px; background-color: #3b82f6 !important; color: white !important; width: 54px !important; height: 54px !important; min-width: 54px !important; max-width: 54px !important; border-radius: 50% !important; box-shadow: 0 6px 18px rgba(59, 130, 246, 0.35); flex: none !important; margin: 0 auto; display: flex !important; align-items: center !important; justify-content: center !important; }
+    .btn-add-tx { position: relative; top: -16px; background-color: #16845B !important; color: white !important; width: 54px !important; height: 54px !important; min-width: 54px !important; max-width: 54px !important; border-radius: 50% !important; box-shadow: 0 6px 18px rgba(22, 132, 91, 0.35); flex: none !important; margin: 0 auto; display: flex !important; align-items: center !important; justify-content: center !important; }
     .btn-add-tx .material-icons { font-size: 30px; color: white; }
 
-    .settings-menu-item { background: #f8fafc; padding: 14px; border-radius: 14px; margin-bottom: 10px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; }
-    .settings-menu-item:hover { background: #f1f5f9; }
+    .settings-menu-item { background: #F6F8F7; padding: 14px; border-radius: 14px; margin-bottom: 10px; border: 1px solid #E5EBE7; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; }
+    .settings-menu-item:hover { background: #EDF2F7; }
     .settings-menu-info { display: flex; align-items: center; gap: 10px; }
-    .settings-menu-info .material-icons { color: #3b82f6; font-size: 22px; }
-    .settings-menu-info h4 { font-size: 14px; color: #0f172a; font-weight: 600; }
+    .settings-menu-info .material-icons { color: #16845B; font-size: 22px; }
+    .settings-menu-info h4 { font-size: 14px; color: #102A43; font-weight: 600; }
 
-    .settings-card-item { background: #f8fafc; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; }
-    .settings-info h4 { font-size: 13px; color: #0f172a; margin-bottom: 2px; font-weight: 600; }
-    .settings-info p { font-size: 10px; color: #94a3b8; }
+    .settings-card-item { background: #F6F8F7; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #E5EBE7; display: flex; align-items: center; justify-content: space-between; }
+    .settings-info h4 { font-size: 13px; color: #102A43; margin-bottom: 2px; font-weight: 600; }
+    .settings-info p { font-size: 10px; color: #718096; }
     .settings-actions { display: flex; align-items: center; gap: 6px; }
-    .icon-btn { background: #e2e8f0; border: none; color: #475569; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .icon-btn:hover { background: #cbd5e1; }
-    .icon-btn.delete:hover { background: #ef4444; color: white; }
+    .icon-btn { background: #E5EBE7; border: none; color: #718096; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .icon-btn:hover { background: #CBD5E0; }
+    .icon-btn.delete:hover { background: #D94848; color: white; }
 
     .add-row { display: flex; gap: 8px; margin-top: 12px; margin-bottom: 16px; }
-    .back-btn { background: none; border: none; color: #3b82f6; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+    .back-btn { background: none; border: none; color: #16845B; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
-    .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1); border: 1px solid #cbd5e1; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(16, 42, 67, 0.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
+    .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(16, 42, 67, 0.15); border: 1px solid #E5EBE7; }
+
+    /* Loading Animation Styles */
+    @keyframes pulseGlow {
+      0% { opacity: 0.6; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.6; transform: scale(0.98); }
+    }
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #F6F8F7;
+      text-align: center;
+      padding: 20px;
+    }
+    .loading-brand {
+      font-size: 32px;
+      font-weight: 800;
+      color: #102A43;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      animation: pulseGlow 1.5s infinite ease-in-out;
+    }
+    .loading-tagline {
+      font-size: 13px;
+      font-weight: 600;
+      color: #16845B;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .loading-sub {
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 25px;
+    }
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 4px solid #E5EBE7;
+      border-top: 4px solid #16845B;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
 
   <div id="root">
-    <h3 style="text-align: center; margin-top: 50px; color: #666;">Loading App...</h3>
+    <div class="loading-container">
+      <div class="loading-brand">ArthoGrow</div>
+      <div class="loading-tagline">Track Save Grow</div>
+      <div class="loading-sub">Personal Finance & wealth management.</div>
+      <div class="spinner" style="margin-top: 15px;"></div>
+      <div style="margin-top: 12px; font-size: 13px; color: #718096; font-weight: 600;">Loading...</div>
+    </div>
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATION SETUP ---
-    // (আপনার ফায়ারবেজ কনফিগারেশন এখানে বসানো হয়েছে)
-    const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "your-app.firebaseapp.com",
-      projectId: "your-app-id",
-      storageBucket: "your-app.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:1234:web:abcd"
-    };
-
-    if (!firebase.apps.length) {
-      try {
-        firebase.initializeApp(firebaseConfig);
-      } catch (err) {
-        console.log("Firebase Init Note: Config needs your project keys.");
-      }
-    }
-
-    const auth = window.firebase ? firebase.auth() : null;
-    const db = window.firebase ? firebase.firestore() : null;
-    const googleProvider = window.firebase ? new firebase.auth.GoogleAuthProvider() : null;
-
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('data:text/javascript;base64,JG9uGg==').catch(() => {});
@@ -180,8 +211,8 @@
       return (
         <div style={{ position: 'relative', overflow: 'hidden', marginBottom: '8px', borderRadius: '16px' }}>
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '120px', display: 'flex', zIndex: 0, borderRadius: '16px', overflow: 'hidden' }}>
-            <div style={{ flex: 1, backgroundColor: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => onEdit(tx)}>Edit</div>
-            <div style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => { if (window.confirm("Delete this?")) onDelete(tx.id); }}>Delete</div>
+            <div style={{ flex: 1, backgroundColor: '#16845B', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => onEdit(tx)}>Edit</div>
+            <div style={{ flex: 1, backgroundColor: '#D94848', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => { if (window.confirm("Delete this?")) onDelete(tx.id); }}>Delete</div>
           </div>
           
           <div 
@@ -201,18 +232,18 @@
                   className="icon-btn" 
                   title={tx.resolved ? 'Already Resolved' : (tx.type === 'lend' ? 'Resolve Lend' : 'Resolve Borrow')}
                   onClick={(e) => { e.stopPropagation(); onResolveDebt(tx); }}
-                  style={{ background: tx.resolved ? '#dcfce7' : '#f1f5f9', color: tx.resolved ? '#10b981' : '#3b82f6', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                  style={{ background: tx.resolved ? '#E6FFFA' : '#F6F8F7', color: tx.resolved ? '#16845B' : '#16845B', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                 >
                   <span className="material-icons" style={{ fontSize: '16px' }}>{tx.resolved ? 'task_alt' : 'check_circle'}</span>
                 </button>
               )}
               <div>
-                <h4 style={{ textDecoration: tx.resolved ? 'line-through' : 'none', color: tx.resolved ? '#94a3b8' : '#0f172a' }}>{tx.title}</h4>
+                <h4 style={{ textDecoration: tx.resolved ? 'line-through' : 'none', color: tx.resolved ? '#A0AEC0' : '#102A43' }}>{tx.title}</h4>
                 <p>
                   {tx.type === 'transfer' ? (
-                    <span className="t-tag" style={{background: '#e0f2fe', color: '#0369a1'}}>{tx.fromWallet} ➔ {tx.toWallet}</span>
+                    <span className="t-tag" style={{background: '#EBF8FF', color: '#2B6CB0'}}>{tx.fromWallet} ➔ {tx.toWallet}</span>
                   ) : tx.type === 'lend' || tx.type === 'borrow' ? (
-                    <span className="t-tag" style={{background: tx.resolved ? '#dcfce7' : '#f1f5f9', color: tx.resolved ? '#166534' : '#475569'}}>
+                    <span className="t-tag" style={{background: tx.resolved ? '#E6FFFA' : '#F6F8F7', color: tx.resolved ? '#16845B' : '#718096'}}>
                       {tx.wallet} ({tx.type === 'lend' ? 'Lend' : 'Borrow'}) {tx.resolved ? '• [Resolved]' : ''}
                     </span>
                   ) : (
@@ -225,7 +256,7 @@
                 </p>
               </div>
             </div>
-            <div className={`t-amount ${tx.resolved ? '' : tx.type}`} style={{ color: tx.resolved ? '#94a3b8' : undefined }}>
+            <div className={`t-amount ${tx.resolved ? '' : tx.type}`} style={{ color: tx.resolved ? '#A0AEC0' : undefined }}>
               {tx.resolved ? '✓ ' : (tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : tx.type === 'lend' ? '-' : tx.type === 'borrow' ? '+' : '⇄')} ৳ {tx.amount.toLocaleString()}
             </div>
           </div>
@@ -248,46 +279,33 @@
       const [editInputVal, setEditInputVal] = React.useState('');
 
       // Google Account Sync State
-      const [googleUser, setGoogleUser] = React.useState(() => localStorage.getItem('my_finance_google_user') || '');
+      const [googleUser, setGoogleUser] = React.useState(() => localStorage.getItem('arthogrow_google_user') || '');
 
       const handleGoogleLogin = () => {
-        if (auth && googleProvider) {
-          auth.signInWithPopup(googleProvider)
-            .then((result) => {
-              const user = result.user;
-              localStorage.setItem('my_finance_google_user', user.email);
-              setGoogleUser(user.email);
-              alert('Successfully signed in with Google: ' + user.email);
-            })
-            .catch((error) => {
-              alert('Google Login Error: ' + error.message);
-            });
+        const email = prompt("Enter your Google Account (Gmail) for Cloud Sync:", "user@gmail.com");
+        if (email && email.includes('@')) {
+          localStorage.setItem('arthogrow_google_user', email);
+          setGoogleUser(email);
+          alert('Successfully signed in with ' + email);
         } else {
-          // Fallback prompt if Firebase keys are placeholder
-          const email = prompt("Enter your Google Account (Gmail) for Cloud Sync:", "user@gmail.com");
-          if (email && email.includes('@')) {
-            localStorage.setItem('my_finance_google_user', email);
-            setGoogleUser(email);
-            alert('Signed in with ' + email);
-          }
+          alert('Please enter a valid Gmail address.');
         }
       };
 
       const handleGoogleLogout = () => {
         if (window.confirm("Sign out from Google account? Local data remains safe.")) {
-          if (auth) auth.signOut().catch(() => {});
-          localStorage.removeItem('my_finance_google_user');
+          localStorage.removeItem('arthogrow_google_user');
           setGoogleUser('');
         }
       };
       
       const [gridOrder, setGridOrder] = React.useState(() => {
-        const saved = localStorage.getItem('my_finance_grid_order');
+        const saved = localStorage.getItem('arthogrow_grid_order');
         return saved ? JSON.parse(saved) : ['wallets', 'savings', 'netWorth', 'incExp', 'lendBorrow', 'categoryReport', 'transactions'];
       });
 
       const [visibleGrids, setVisibleGrids] = React.useState(() => {
-        const saved = localStorage.getItem('my_finance_grids');
+        const saved = localStorage.getItem('arthogrow_grids');
         return saved ? JSON.parse(saved) : {
           wallets: true,
           savings: true,
@@ -300,8 +318,8 @@
       });
 
       React.useEffect(() => {
-        localStorage.setItem('my_finance_grids', JSON.stringify(visibleGrids));
-        localStorage.setItem('my_finance_grid_order', JSON.stringify(gridOrder));
+        localStorage.setItem('arthogrow_grids', JSON.stringify(visibleGrids));
+        localStorage.setItem('arthogrow_grid_order', JSON.stringify(gridOrder));
       }, [visibleGrids, gridOrder]);
 
       const toggleGrid = (key) => {
@@ -319,7 +337,7 @@
       };
       
       const [transactions, setTransactions] = React.useState(() => {
-        const savedData = localStorage.getItem('my_finance_data');
+        const savedData = localStorage.getItem('arthogrow_data');
         if (savedData) {
           let parsedData = JSON.parse(savedData);
           parsedData.sort((a, b) => new Date(b.rawDate || 0) - new Date(a.rawDate || 0));
@@ -329,22 +347,23 @@
       });
 
       const [wallets, setWallets] = React.useState(() => {
-        const saved = localStorage.getItem('my_finance_wallets');
+        const saved = localStorage.getItem('arthogrow_wallets');
         return saved ? JSON.parse(saved) : ['Bank', 'Bkash', 'Nagad', 'Cash'];
       });
 
+      // Savings & Investment accounts updated to English
       const [savingsList, setSavingsList] = React.useState(() => {
-        const saved = localStorage.getItem('my_finance_savings');
-        return saved ? JSON.parse(saved) : ['সেভিংস', 'সমিতি', 'ইনভেস্টমেন্ট'];
+        const saved = localStorage.getItem('arthogrow_savings');
+        return saved ? JSON.parse(saved) : ['Savings', 'Samity', 'Investment'];
       });
 
       const [expenseCategories, setExpenseCategories] = React.useState(() => {
-        const saved = localStorage.getItem('my_finance_exp_cats');
+        const saved = localStorage.getItem('arthogrow_exp_cats');
         return saved ? JSON.parse(saved) : ['Family Maintenance', 'Relative', 'Personal', 'Career', 'Sadakah', 'Others'];
       });
 
       const [incomeCategories, setIncomeCategories] = React.useState(() => {
-        const saved = localStorage.getItem('my_finance_inc_cats');
+        const saved = localStorage.getItem('arthogrow_inc_cats');
         return saved ? JSON.parse(saved) : ['Salary', 'Business', 'Gift', 'Others'];
       });
 
@@ -353,11 +372,11 @@
       const [newExpCatInput, setNewExpCatInput] = React.useState('');
       const [newIncCatInput, setNewIncCatInput] = React.useState('');
 
-      React.useEffect(() => { localStorage.setItem('my_finance_data', JSON.stringify(transactions)); }, [transactions]);
-      React.useEffect(() => { localStorage.setItem('my_finance_wallets', JSON.stringify(wallets)); }, [wallets]);
-      React.useEffect(() => { localStorage.setItem('my_finance_savings', JSON.stringify(savingsList)); }, [savingsList]);
-      React.useEffect(() => { localStorage.setItem('my_finance_exp_cats', JSON.stringify(expenseCategories)); }, [expenseCategories]);
-      React.useEffect(() => { localStorage.setItem('my_finance_inc_cats', JSON.stringify(incomeCategories)); }, [incomeCategories]);
+      React.useEffect(() => { localStorage.setItem('arthogrow_data', JSON.stringify(transactions)); }, [transactions]);
+      React.useEffect(() => { localStorage.setItem('arthogrow_wallets', JSON.stringify(wallets)); }, [wallets]);
+      React.useEffect(() => { localStorage.setItem('arthogrow_savings', JSON.stringify(savingsList)); }, [savingsList]);
+      React.useEffect(() => { localStorage.setItem('arthogrow_exp_cats', JSON.stringify(expenseCategories)); }, [expenseCategories]);
+      React.useEffect(() => { localStorage.setItem('arthogrow_inc_cats', JSON.stringify(incomeCategories)); }, [incomeCategories]);
 
       const getTodayDate = () => {
         const now = new Date();
@@ -595,31 +614,43 @@
         switch (key) {
           case 'wallets':
             return visibleGrids.wallets && (
-              <div key="wallets" className="wallets-container">
-                {wallets.map((w, idx) => {
-                  const dotColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
-                  return (
-                    <div key={w} className="wallet-card">
-                      <div className="wallet-dot" style={{ backgroundColor: dotColors[idx % dotColors.length] }}></div>
-                      <h4 style={{ fontSize: '16px' }}>{w}</h4>
-                      <div className="w-bal">৳ {(walletBalances[w] || 0).toLocaleString()}</div>
-                      <div className="w-tx">{txCountByWallet[w] || 0} transactions</div>
-                    </div>
-                  );
-                })}
+              <div key="wallets">
+                <div className="section-heading">
+                  <span className="material-icons" style={{fontSize: '18px', color: '#16845B'}}>account_balance_wallet</span>
+                  Wallet List
+                </div>
+                <div className="wallets-container">
+                  {wallets.map((w, idx) => {
+                    const dotColors = ['#16845B', '#2B6CB0', '#D69E2E', '#805AD5'];
+                    return (
+                      <div key={w} className="wallet-card">
+                        <div className="wallet-dot" style={{ backgroundColor: dotColors[idx % dotColors.length] }}></div>
+                        <h4>{w}</h4>
+                        <div className="w-bal">৳ {(walletBalances[w] || 0).toLocaleString()}</div>
+                        <div className="w-tx">{txCountByWallet[w] || 0} transactions</div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           case 'savings':
             return visibleGrids.savings && (
-              <div key="savings" className="wallets-container">
-                {savingsList.map((s, idx) => (
-                  <div key={s} className="wallet-card">
-                    <div className="wallet-dot" style={{ backgroundColor: '#14b8a6' }}></div>
-                    <h4 style={{ fontSize: '16px' }}>{s}</h4>
-                    <div className="w-bal">৳ {(walletBalances[s] || 0).toLocaleString()}</div>
-                    <div className="w-tx">{txCountByWallet[s] || 0} transactions</div>
-                  </div>
-                ))}
+              <div key="savings">
+                <div className="section-heading">
+                  <span className="material-icons" style={{fontSize: '18px', color: '#2B6CB0'}}>savings</span>
+                  Savings & Investments
+                </div>
+                <div className="wallets-container">
+                  {savingsList.map((s, idx) => (
+                    <div key={s} className="wallet-card">
+                      <div className="wallet-dot" style={{ backgroundColor: '#2B6CB0' }}></div>
+                      <h4>{s}</h4>
+                      <div className="w-bal">৳ {(walletBalances[s] || 0).toLocaleString()}</div>
+                      <div className="w-tx">{txCountByWallet[s] || 0} transactions</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           case 'netWorth':
@@ -631,10 +662,10 @@
                 onContextMenu={(e) => { e.preventDefault(); setShowFilterModal(true); }}
               >
                 <div className="top-row">
-                  <span>📈 Net Worth</span>
+                  <span>Total Net Worth</span>
                   <span>{globalFilter === 'monthly' ? 'Monthly' : globalFilter === 'yearly' ? 'Yearly' : globalFilter === 'custom' ? 'Custom' : 'All Time'} ▾</span>
                 </div>
-                <h2>৳ {netWorth.toLocaleString()} BDT</h2>
+                <h2>৳ {netWorth.toLocaleString()}</h2>
                 <div className="sub-row">
                   <span>×{totalTxCount} transactions</span>
                   <span>{globalFilter === 'all' ? 'All Time' : globalFilter === 'monthly' ? 'This Month' : globalFilter === 'yearly' ? 'This Year' : 'Custom Period'}</span>
@@ -645,7 +676,7 @@
             return visibleGrids.incExp && (
               <div key="incExp" className="inc-exp-grid">
                 <div className="ie-card expense">
-                  <div className="ie-title"><span className="material-icons" style={{fontSize: '15px', color: '#ef4444'}}>trending_down</span> Expense</div>
+                  <div className="ie-title"><span className="material-icons" style={{fontSize: '15px', color: '#D94848'}}>trending_down</span> Expense</div>
                   <h3>৳ {totalExpense.toLocaleString()}</h3>
                   <div className="ie-footer">
                     <span>×{filteredTransactions.filter(t=>t.type==='expense').length}</span>
@@ -653,7 +684,7 @@
                   </div>
                 </div>
                 <div className="ie-card income">
-                  <div className="ie-title"><span className="material-icons" style={{fontSize: '15px', color: '#10b981'}}>trending_up</span> Income</div>
+                  <div className="ie-title"><span className="material-icons" style={{fontSize: '15px', color: '#16845B'}}>trending_up</span> Income</div>
                   <h3>৳ {totalIncome.toLocaleString()}</h3>
                   <div className="ie-footer">
                     <span>×{filteredTransactions.filter(t=>t.type==='income').length}</span>
@@ -665,30 +696,30 @@
           case 'lendBorrow':
             return visibleGrids.lendBorrow && (
               <div key="lendBorrow" className="grid-2-container">
-                <div className="net-worth-card" style={{margin: 0, padding: '14px'}} onClick={() => setModalType('lend_list')}>
-                  <div className="top-row" style={{marginBottom: '2px'}}>
-                    <span style={{color: '#3b82f6'}}>📥 Lent</span>
-                    <span style={{fontSize: '10px'}}>×{lendTransactions.length}</span>
+                <div className="ie-card" style={{margin: 0, padding: '14px', cursor: 'pointer'}} onClick={() => setModalType('lend_list')}>
+                  <div className="top-row" style={{marginBottom: '2px', display: 'flex', justifyContent: 'space-between', color: '#718096', fontSize: '12px'}}>
+                    <span style={{color: '#2B6CB0', fontWeight: '600'}}>📥 Lent</span>
+                    <span>×{lendTransactions.length}</span>
                   </div>
-                  <h3 style={{fontSize: '18px', color: '#2563eb', fontWeight: '700'}}>৳ {totalLend.toLocaleString()}</h3>
-                  <div className="sub-row" style={{marginTop: '4px', paddingTop: '2px'}}><span>Tap to view</span></div>
+                  <h3 style={{fontSize: '18px', color: '#2B6CB0', fontWeight: '700', marginTop: '4px'}}>৳ {totalLend.toLocaleString()}</h3>
+                  <div style={{marginTop: '4px', fontSize: '10px', color: '#A0AEC0'}}>Tap to view</div>
                 </div>
-                <div className="net-worth-card" style={{margin: 0, padding: '14px'}} onClick={() => setModalType('borrow_list')}>
-                  <div className="top-row" style={{marginBottom: '2px'}}>
-                    <span style={{color: '#7c3aed'}}>📤 Borrowed</span>
-                    <span style={{fontSize: '10px'}}>×{borrowTransactions.length}</span>
+                <div className="ie-card" style={{margin: 0, padding: '14px', cursor: 'pointer'}} onClick={() => setModalType('borrow_list')}>
+                  <div className="top-row" style={{marginBottom: '2px', display: 'flex', justifyContent: 'space-between', color: '#718096', fontSize: '12px'}}>
+                    <span style={{color: '#805AD5', fontWeight: '600'}}>📤 Borrowed</span>
+                    <span>×{borrowTransactions.length}</span>
                   </div>
-                  <h3 style={{fontSize: '18px', color: '#7c3aed', fontWeight: '700'}}>৳ {totalBorrow.toLocaleString()}</h3>
-                  <div className="sub-row" style={{marginTop: '4px', paddingTop: '2px'}}><span>Tap to view</span></div>
+                  <h3 style={{fontSize: '18px', color: '#805AD5', fontWeight: '700', marginTop: '4px'}}>৳ {totalBorrow.toLocaleString()}</h3>
+                  <div style={{marginTop: '4px', fontSize: '10px', color: '#A0AEC0'}}>Tap to view</div>
                 </div>
               </div>
             );
           case 'categoryReport':
             return visibleGrids.categoryReport && (
               <div key="categoryReport" className="category-report">
-                <div className="section-title" style={{marginBottom: '8px'}}>Expense by Category</div>
+                <div style={{fontSize: '14px', fontWeight: '700', color: '#102A43', marginBottom: '10px'}}>Expense by Category</div>
                 {sortedExpenses.length === 0 ? (
-                  <p style={{ color: '#94a3b8', textAlign: 'center', fontSize: '12px' }}>No expense data available.</p>
+                  <p style={{ color: '#718096', textAlign: 'center', fontSize: '12px' }}>No expense data available.</p>
                 ) : (
                   sortedExpenses.map(([cat, amount]) => {
                     const percentage = totalExpense > 0 ? ((amount / totalExpense) * 100).toFixed(1) : 0;
@@ -710,8 +741,8 @@
           case 'transactions':
             return visibleGrids.transactions && (
               <div key="transactions">
-                <div className="section-title">Recent Transactions</div>
-                {filteredTransactions.length === 0 && <p style={{color: '#94a3b8', textAlign: 'center'}}>No transactions found.</p>}
+                <div style={{fontSize: '14px', fontWeight: '700', color: '#102A43', marginBottom: '8px'}}>Recent Transactions</div>
+                {filteredTransactions.length === 0 && <p style={{color: '#718096', textAlign: 'center'}}>No transactions found.</p>}
                 {filteredTransactions.map((tx) => (
                   <SwipeableTransaction key={tx.id} tx={tx} onDelete={handleDelete} onEdit={handleEdit} onResolveDebt={handleResolveDebt} />
                 ))}
@@ -726,8 +757,8 @@
         <div className="app-container">
           <header className="header">
             <div>
-              <h1 style={{ fontSize: '22px' }}>Hello</h1>
-              <p style={{ fontSize: '11px', color: '#64748b' }}>{googleUser ? googleUser : 'Offline Mode'}</p>
+              <h1>ArthoGrow</h1>
+              <p style={{ fontSize: '11px', color: '#718096' }}>{googleUser ? googleUser : 'Offline Mode'}</p>
             </div>
             <div className="header-actions">
               <button className="header-icon" title="Organize Home Grids" onClick={() => setShowCustomizeModal(true)}>
@@ -745,7 +776,7 @@
             
             {activeTab === 'transactions' && (
               <div className="page">
-                <h3 className="section-title" style={{ marginBottom: '12px' }}>{entries[0].id ? 'Edit Transaction' : 'Add New Transaction'}</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43', marginBottom: '14px' }}>{entries[0].id ? 'Edit Transaction' : 'Add New Transaction'}</h3>
                 <form onSubmit={handleAddTransaction}>
                   {entries.map((entry, index) => {
                     const currentCategories = entry.type === 'expense' ? expenseCategories : incomeCategories;
@@ -832,27 +863,27 @@
               <div className="page">
                 {settingsView === 'menu' && (
                   <div>
-                    <h3 className="section-title" style={{marginBottom: '14px'}}>Settings & Management</h3>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43', marginBottom: '14px' }}>Settings & Management</h3>
                     
                     {/* Google Login / Sync Option */}
                     {!googleUser ? (
-                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#EBF8FF', border: '1px solid #BEE3F8' }}>
                         <div className="settings-menu-info">
-                          <span className="material-icons" style={{ color: '#2563eb' }}>account_circle</span>
-                          <h4 style={{ color: '#1d4ed8' }}>Sign In with Google</h4>
+                          <span className="material-icons" style={{ color: '#2B6CB0' }}>account_circle</span>
+                          <h4 style={{ color: '#2B6CB0' }}>Sign In with Google</h4>
                         </div>
-                        <span className="material-icons" style={{color: '#3b82f6'}}>login</span>
+                        <span className="material-icons" style={{color: '#2B6CB0'}}>login</span>
                       </div>
                     ) : (
-                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                      <div className="settings-menu-item" onClick={handleGoogleLogin} style={{ background: '#E6FFFA', border: '1px solid #B2F5EA' }}>
                         <div className="settings-menu-info">
-                          <span className="material-icons" style={{ color: '#16a34a' }}>cloud_done</span>
+                          <span className="material-icons" style={{ color: '#16845B' }}>cloud_done</span>
                           <div>
-                            <h4 style={{ color: '#15803d' }}>Google Connected</h4>
-                            <p style={{ fontSize: '10px', color: '#166534' }}>{googleUser}</p>
+                            <h4 style={{ color: '#16845B' }}>Google Connected</h4>
+                            <p style={{ fontSize: '10px', color: '#234E52' }}>{googleUser}</p>
                           </div>
                         </div>
-                        <span className="material-icons" style={{color: '#16a34a'}}>sync</span>
+                        <span className="material-icons" style={{color: '#16845B'}}>sync</span>
                       </div>
                     )}
 
@@ -861,7 +892,7 @@
                         <span className="material-icons">account_balance_wallet</span>
                         <h4>Manage Wallets</h4>
                       </div>
-                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                      <span className="material-icons" style={{color: '#A0AEC0'}}>chevron_right</span>
                     </div>
 
                     <div className="settings-menu-item" onClick={() => setSettingsView('savings')}>
@@ -869,7 +900,7 @@
                         <span className="material-icons">savings</span>
                         <h4>Savings & Investments</h4>
                       </div>
-                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                      <span className="material-icons" style={{color: '#A0AEC0'}}>chevron_right</span>
                     </div>
 
                     <div className="settings-menu-item" onClick={() => setSettingsView('exp_cat')}>
@@ -877,7 +908,7 @@
                         <span className="material-icons">category</span>
                         <h4>Expense Categories</h4>
                       </div>
-                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                      <span className="material-icons" style={{color: '#A0AEC0'}}>chevron_right</span>
                     </div>
 
                     <div className="settings-menu-item" onClick={() => setSettingsView('inc_cat')}>
@@ -885,27 +916,27 @@
                         <span className="material-icons">payments</span>
                         <h4>Income Categories</h4>
                       </div>
-                      <span className="material-icons" style={{color: '#94a3b8'}}>chevron_right</span>
+                      <span className="material-icons" style={{color: '#A0AEC0'}}>chevron_right</span>
                     </div>
 
                     {googleUser && (
-                      <div className="settings-menu-item" onClick={handleGoogleLogout} style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
+                      <div className="settings-menu-item" onClick={handleGoogleLogout} style={{ background: '#FFF5F5', border: '1px solid #FED7D7' }}>
                         <div className="settings-menu-info">
-                          <span className="material-icons" style={{ color: '#dc2626' }}>logout</span>
-                          <h4 style={{ color: '#b91c1c' }}>Sign Out from Google</h4>
+                          <span className="material-icons" style={{ color: '#D94848' }}>logout</span>
+                          <h4 style={{ color: '#D94848' }}>Sign Out from Google</h4>
                         </div>
-                        <span className="material-icons" style={{color: '#ef4444'}}>chevron_right</span>
+                        <span className="material-icons" style={{color: '#D94848'}}>chevron_right</span>
                       </div>
                     )}
 
-                    <button onClick={() => { if(window.confirm("Reset all data?")) { setTransactions([]); localStorage.clear(); window.location.reload(); } }} style={{backgroundColor: '#ef4444', color: 'white', padding: '12px', border: 'none', borderRadius: '10px', width: '100%', marginTop: '20px', fontWeight: 'bold', cursor: 'pointer'}}>Reset All Data</button>
+                    <button onClick={() => { if(window.confirm("Reset all data?")) { setTransactions([]); localStorage.clear(); window.location.reload(); } }} style={{backgroundColor: '#D94848', color: 'white', padding: '12px', border: 'none', borderRadius: '10px', width: '100%', marginTop: '20px', fontWeight: 'bold', cursor: 'pointer'}}>Reset All Data</button>
                   </div>
                 )}
 
                 {settingsView === 'wallets' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 className="section-title">Wallet List</h3>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Wallet List</h3>
                     {wallets.map((w, idx) => (
                       <div key={w} className="settings-card-item">
                         <div className="settings-info"><h4>{w}</h4><p>{txCountByWallet[w] || 0} transactions</p></div>
@@ -931,7 +962,7 @@
                 {settingsView === 'savings' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 className="section-title">Savings & Investment Accounts</h3>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Savings & Investment Accounts</h3>
                     {savingsList.map((s, idx) => (
                       <div key={s} className="settings-card-item">
                         <div className="settings-info"><h4>{s}</h4><p>{txCountByWallet[s] || 0} transactions</p></div>
@@ -956,7 +987,7 @@
                 {settingsView === 'exp_cat' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 className="section-title">Expense Categories</h3>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Expense Categories</h3>
                     {expenseCategories.map((c, idx) => (
                       <div key={c} className="settings-card-item">
                         <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
@@ -982,7 +1013,7 @@
                 {settingsView === 'inc_cat' && (
                   <div>
                     <button className="back-btn" onClick={() => setSettingsView('menu')}><span className="material-icons">arrow_back</span> Back to Menu</button>
-                    <h3 className="section-title">Income Categories</h3>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Income Categories</h3>
                     {incomeCategories.map((c, idx) => (
                       <div key={c} className="settings-card-item">
                         <div className="settings-info"><h4>{c}</h4><p>{txCountByCategory[c] || 0} transactions</p></div>
@@ -1012,13 +1043,13 @@
           {editingItem && (
             <div className="modal-overlay" onClick={() => setEditingItem(null)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>Edit Name</h3>
+                <h3 style={{ marginBottom: '12px', color: '#16845B' }}>Edit Name</h3>
                 <div className="form-group">
                   <label>New Name</label>
                   <input type="text" className="form-control" value={editInputVal} onChange={(e) => setEditInputVal(e.target.value)} />
                 </div>
                 <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={saveEditedItem}>Save</button>
-                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#94a3b8' }} onClick={() => setEditingItem(null)}>Cancel</button>
+                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#A0AEC0' }} onClick={() => setEditingItem(null)}>Cancel</button>
               </div>
             </div>
           )}
@@ -1027,7 +1058,7 @@
           {showCustomizeModal && (
             <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ marginBottom: '15px', color: '#3b82f6' }}>Organize & Reorder Home Grids</h3>
+                <h3 style={{ marginBottom: '15px', color: '#16845B' }}>Organize & Reorder Home Grids</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
                   {gridOrder.map((key, idx) => {
                     const labelNames = {
@@ -1040,9 +1071,9 @@
                       transactions: 'Recent Transactions List'
                     };
                     return (
-                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '8px 10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
-                          <input type="checkbox" checked={visibleGrids[key]} onChange={() => toggleGrid(key)} style={{ width: '16px', height: '16px' }} />
+                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F6F8F7', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E5EBE7' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1, color: '#102A43', fontWeight: '500' }}>
+                          <input type="checkbox" checked={visibleGrids[key]} onChange={() => toggleGrid(key)} style={{ width: '16px', height: '16px', accentColor: '#16845B' }} />
                           {labelNames[key]}
                         </label>
                         <div style={{ display: 'flex', gap: '4px' }}>
@@ -1061,25 +1092,25 @@
           {modalType && (
             <div className="modal-overlay" onClick={() => setModalType(null)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>
+                <h3 style={{ marginBottom: '12px', color: '#16845B' }}>
                   {modalType === 'lend_list' ? 'Lent List' : 'Borrowed List'}
                 </h3>
                 {((modalType === 'lend_list' ? lendTransactions : borrowTransactions).length === 0) ? (
-                  <p style={{ color: '#94a3b8', textAlign: 'center', padding: '15px 0' }}>No records found.</p>
+                  <p style={{ color: '#718096', textAlign: 'center', padding: '15px 0' }}>No records found.</p>
                 ) : (
                   (modalType === 'lend_list' ? lendTransactions : borrowTransactions).map(tx => (
-                    <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
+                    <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #E5EBE7' }}>
                       <div>
-                        <h4 style={{ fontSize: '13px', textDecoration: tx.resolved ? 'line-through' : 'none', color: '#0f172a' }}>{tx.title} {tx.resolved ? '[Resolved]' : ''}</h4>
-                        <p style={{ fontSize: '10px', color: '#94a3b8' }}>Wallet: {tx.wallet} • {tx.date}</p>
+                        <h4 style={{ fontSize: '13px', textDecoration: tx.resolved ? 'line-through' : 'none', color: '#102A43' }}>{tx.title} {tx.resolved ? '[Resolved]' : ''}</h4>
+                        <p style={{ fontSize: '10px', color: '#718096' }}>Wallet: {tx.wallet} • {tx.date}</p>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '13px', color: modalType === 'lend_list' ? '#2563eb' : '#7c3aed' }}>৳ {tx.amount.toLocaleString()}</span>
+                        <span style={{ fontWeight: 'bold', fontSize: '13px', color: modalType === 'lend_list' ? '#2B6CB0' : '#805AD5' }}>৳ {tx.amount.toLocaleString()}</span>
                         <button 
                           className="icon-btn" 
                           title="Resolve"
                           onClick={() => { handleResolveDebt(tx); }}
-                          style={{ background: tx.resolved ? '#10b981' : '#f1f5f9', color: tx.resolved ? 'white' : '#10b981', width: '28px', height: '28px' }}
+                          style={{ background: tx.resolved ? '#16845B' : '#F6F8F7', color: tx.resolved ? 'white' : '#16845B', width: '28px', height: '28px' }}
                         >
                           <span className="material-icons" style={{ fontSize: '14px' }}>{tx.resolved ? 'done' : 'check'}</span>
                         </button>
@@ -1095,7 +1126,7 @@
           {resolvingTx && (
             <div className="modal-overlay" onClick={() => setResolvingTx(null)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>
+                <h3 style={{ marginBottom: '12px', color: '#16845B' }}>
                   {resolvingTx.type === 'lend' ? 'Select wallet for collection:' : 'Select wallet for payment:'}
                 </h3>
                 <div className="form-group">
@@ -1105,7 +1136,7 @@
                   </select>
                 </div>
                 <button className="btn-submit" style={{ marginTop: '12px', padding: '10px' }} onClick={confirmResolveDebt}>Confirm</button>
-                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#94a3b8' }} onClick={() => setResolvingTx(null)}>Cancel</button>
+                <button className="btn-submit" style={{ marginTop: '8px', padding: '10px', background: '#A0AEC0' }} onClick={() => setResolvingTx(null)}>Cancel</button>
               </div>
             </div>
           )}
@@ -1113,23 +1144,23 @@
           {showFilterModal && (
             <div className="modal-overlay" onClick={() => setShowFilterModal(false)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ marginBottom: '12px', color: '#3b82f6' }}>Select Time Period</h3>
+                <h3 style={{ marginBottom: '12px', color: '#16845B' }}>Select Time Period</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
-                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'monthly' ? '#3b82f6' : '#cbd5e1' }} onClick={() => { setGlobalFilter('monthly'); setShowFilterModal(false); }}>Monthly (Default)</button>
-                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'yearly' ? '#3b82f6' : '#cbd5e1' }} onClick={() => { setGlobalFilter('yearly'); setShowFilterModal(false); }}>Yearly</button>
-                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'all' ? '#3b82f6' : '#cbd5e1' }} onClick={() => { setGlobalFilter('all'); setShowFilterModal(false); }}>All Time</button>
+                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'monthly' ? '#16845B' : '#CBD5E0' }} onClick={() => { setGlobalFilter('monthly'); setShowFilterModal(false); }}>Monthly (Default)</button>
+                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'yearly' ? '#16845B' : '#CBD5E0' }} onClick={() => { setGlobalFilter('yearly'); setShowFilterModal(false); }}>Yearly</button>
+                  <button className="btn-submit" style={{ padding: '10px', background: globalFilter === 'all' ? '#16845B' : '#CBD5E0' }} onClick={() => { setGlobalFilter('all'); setShowFilterModal(false); }}>All Time</button>
                 </div>
 
-                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '10px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', display: 'block', marginBottom: '6px' }}>Custom Range:</label>
+                <div style={{ borderTop: '1px solid #E5EBE7', paddingTop: '10px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '6px' }}>Custom Range:</label>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
                     <input type="date" className="form-control" value={customDateFrom} onChange={(e) => setCustomDateFrom(e.target.value)} />
                     <input type="date" className="form-control" value={customDateTo} onChange={(e) => setCustomDateTo(e.target.value)} />
                   </div>
-                  <button className="btn-submit" style={{ padding: '8px', background: '#10b981', marginBottom: '8px' }} onClick={() => { if (customDateFrom && customDateTo) { setGlobalFilter('custom'); setShowFilterModal(false); } else { alert('Please select both dates'); } }}>Apply Custom</button>
+                  <button className="btn-submit" style={{ padding: '8px', background: '#2B6CB0', marginBottom: '8px' }} onClick={() => { if (customDateFrom && customDateTo) { setGlobalFilter('custom'); setShowFilterModal(false); } else { alert('Please select both dates'); } }}>Apply Custom</button>
                 </div>
 
-                <button className="btn-submit" style={{ padding: '8px', background: '#ef4444' }} onClick={() => setShowFilterModal(false)}>Cancel</button>
+                <button className="btn-submit" style={{ padding: '8px', background: '#D94848' }} onClick={() => setShowFilterModal(false)}>Cancel</button>
               </div>
             </div>
           )}
