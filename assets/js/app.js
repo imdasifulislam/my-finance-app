@@ -1,3 +1,4 @@
+alert("App.js সফলভাবে লোড হয়েছে!");
 // assets/js/app.js
 import { QuickCalculator } from './calculator.js';
 
