@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bazar Memo & Notepad</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & Babel Production CDNs -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    /* বডির ফ্লেক্স সরানো হয়েছে যাতে কন্টেইনার কন্টেন্ট অনুযায়ী ছোট না হয় */
+    body { background-color: #F6F8F7; color: #102A43; display: block; min-height: 100vh; }
+    
+    /* অ্যাপ কন্টেইনার সব সময় ফিক্সড উইডথ পাবে */
+    .app-container { width: 100%; max-width: 380px; min-height: 100vh; background: #FFFFFF; margin: 0 auto; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+    
+    /* ট্যাব সিলেক্টর */
+    .tab-selector { display: flex; background: #E5EBE7; padding: 4px; border-radius: 12px; margin: 16px; gap: 4px; }
+    .tab-btn { flex: 1; padding: 12px 0; text-align: center; font-size: 14px; font-weight: 600; color: #718096; border: none; background: none; border-radius: 9px; cursor: pointer; transition: 0.2s; }
+    .tab-btn.active { background: #FFFFFF; color: #16845B; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+
+    .content { flex: 1; padding: 0 16px 20px 16px; overflow-y: auto; display: flex; flex-direction: column; width: 100%; }
+    
+    .form-control { width: 100%; padding: 12px 14px; border: 1px solid #E5EBE7; border-radius: 10px; font-size: 14px; background: #FFFFFF; color: #102A43; outline: none; }
+    
+    /* গ্রিন বাটন (Save Note এবং Save Memo এর জন্য) */
+    .btn-submit { padding: 14px; background-color: #16845B; color: white; border: none; border-radius: 12px; font-size: 14px; cursor: pointer; font-weight: 600; width: 100%; display: flex; justify-content: center; align-items: center; }
+    
+    .common-box { width: 100%; background: #F8FAF9; padding: 16px; border-radius: 16px; margin-bottom: 16px; border: 1px solid #EAEFEA; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; }
+    
+    .note-input-title { width: 100%; border: none; font-size: 20px; font-weight: 700; color: #102A43; outline: none; background: transparent; margin-bottom: 2px; }
+    .note-input-title::placeholder { color: #CBD5E0; }
+    .note-textarea { width: 100%; border: none; font-size: 15px; color: #2D3748; outline: none; background: transparent; resize: none; min-height: 160px; line-height: 1.5; }
+    .note-textarea::placeholder { color: #A0AEC0; }
+  </style>
+</head>
+<body>
+
+  <!-- React Root Element -->
+  <div id="root"></div>
+
+  <!-- React & Babel Script -->
+  <script type="text/babel">
+    function App() {
+      const [activeTab, setActiveTab] = React.useState('memo');
+
+      // Swipe Gesture Handling
+      const touchStartX = React.useRef(0);
+      const touchEndX = React.useRef(0);
+
+      const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+      const handleTouchMove = (e) => { touchEndX.current = e.touches[0].clientX; };
+      const handleTouchEnd = () => {
+        const distance = touchStartX.current - touchEndX.current;
+        const minSwipeDistance = 60;
+        if (distance > minSwipeDistance) setActiveTab('notepad');
+        else if (distance < -minSwipeDistance) setActiveTab('memo');
+      };
+
+      const getTodayDate = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      };
+
+      const getFormattedDateLabel = () => {
+        const now = new Date();
+        const options = { month: 'long', day: 'numeric' };
+        const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+        return `${now.toLocaleDateString('en-US', options)} ${now.toLocaleTimeString('en-US', timeOptions)}`;
+      };
+
+      // --- Bazar Memo States ---
+      const [memos, setMemos] = React.useState(() => {
+        const saved = localStorage.getItem('orthogro_all_bazar_memos');
+        return saved ? JSON.parse(saved) : [];
+      });
+
+      const [memoDate, setMemoDate] = React.useState(getTodayDate());
+      const [category, setCategory] = React.useState('Family Maintenance');
+      const [wallet, setWallet] = React.useState('Cash');
+
+      const [rows, setRows] = React.useState([
+        { name: '', price: '' },
+        { name: '', price: '' },
+        { name: '', price: '' }
+      ]);
+
+      // --- Notepad States ---
+      const [notes, setNotes] = React.useState(() => {
+        const saved = localStorage.getItem('orthogro_saved_notes');
+        return saved ? JSON.parse(saved) : [];
+      });
+      const [noteTitle, setNoteTitle] = React.useState('');
+      const [noteContent, setNoteContent] = React.useState('');
+
+      React.useEffect(() => { localStorage.setItem('orthogro_all_bazar_memos', JSON.stringify(memos)); }, [memos]);
+      React.useEffect(() => { localStorage.setItem('orthogro_saved_notes', JSON.stringify(notes)); }, [notes]);
+
+      const handleRowChange = (index, field, value) => {
+        const updatedRows = [...rows];
+        updatedRows[index][field] = value;
+        setRows(updatedRows);
+      };
+
+      const addMoreRow = () => setRows([...rows, { name: '', price: '' }]);
+      const totalAmount = rows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+
+      const validateMemo = () => {
+        const validItems = rows.filter(r => r.name.trim() !== '' && r.price !== '');
+        if (validItems.length === 0) {
+          alert('Please fill at least one item and price!');
+          return null;
+        }
+        return validItems;
+      };
+
+      const clearMemoForm = () => {
+        setRows([{ name: '', price: '' }, { name: '', price: '' }, { name: '', price: '' }]);
+      };
+
+      const handleSaveMemoOnly = () => {
+        const validItems = validateMemo();
+        if (!validItems) return;
+
+        const newMemoObj = {
+          id: Date.now(),
+          date: memoDate,
+          category: category,
+          wallet: wallet,
+          items: validItems,
+          total: totalAmount
+        };
+
+        setMemos([newMemoObj, ...memos]);
+        alert('✅ Bazar Memo Saved Successfully!');
+        clearMemoForm();
+      };
+
+      const handleSaveMemoAndExpense = () => {
+        const validItems = validateMemo();
+        if (!validItems) return;
+
+        const memoTitle = `Bazar (${memoDate})`;
+        const detailedNote = validItems.map(i => `${i.name}: ৳${i.price}`).join(', ');
+
+        const newMemoObj = {
+          id: Date.now(),
+          date: memoDate,
+          category: category,
+          wallet: wallet,
+          items: validItems,
+          total: totalAmount
+        };
+
+        const newExpenseTx = {
+          id: Date.now(),
+          title: memoTitle,
+          amount: totalAmount,
+          type: 'expense',
+          category: category,
+          wallet: wallet,
+          date: new Date(memoDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+          rawDate: memoDate,
+          resolved: true,
+          note: detailedNote
+        };
+
+        setMemos([newMemoObj, ...memos]);
+
+        const existingTxs = JSON.parse(localStorage.getItem('orthogro_data') || '[]');
+        localStorage.setItem('orthogro_data', JSON.stringify([newExpenseTx, ...existingTxs]));
+
+        alert(`✅ Memo Saved & Added as Expense!\nTotal: ৳ ${totalAmount.toLocaleString()}`);
+        clearMemoForm();
+      };
+
+      const deleteMemo = (id) => {
+        if (window.confirm('Delete this Bazar Memo?')) {
+          setMemos(memos.filter(m => m.id !== id));
+        }
+      };
+
+      const saveNote = (e) => {
+        e.preventDefault();
+        if (!noteTitle.trim() && !noteContent.trim()) return;
+        const newNote = {
+          id: Date.now(),
+          title: noteTitle.trim() || 'Untitled Note',
+          content: noteContent.trim(),
+          date: getFormattedDateLabel(),
+          charCount: (noteTitle + noteContent).length
+        };
+        setNotes([newNote, ...notes]);
+        setNoteTitle('');
+        setNoteContent('');
+        alert('✅ Note Saved Successfully!');
+      };
+
+      const deleteNote = (id) => {
+        if (window.confirm('Delete this note?')) {
+          setNotes(notes.filter(n => n.id !== id));
+        }
+      };
+
+      return (
+        <div 
+          className="app-container"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Selector Tabs */}
+          <div className="tab-selector">
+            <button className={`tab-btn ${activeTab === 'memo' ? 'active' : ''}`} onClick={() => setActiveTab('memo')}>
+              Bazar Memo
+            </button>
+            <button className={`tab-btn ${activeTab === 'notepad' ? 'active' : ''}`} onClick={() => setActiveTab('notepad')}>
+              Notepad
+            </button>
+          </div>
+
+          <div className="content">
+            {activeTab === 'memo' ? (
+              <div style={{ width: '100%' }}>
+                {/* Bazar Memo Box */}
+                <div className="common-box">
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '4px' }}>Date</label>
+                    <input type="date" className="form-control" value={memoDate} onChange={(e) => setMemoDate(e.target.value)} />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '4px' }}>Category</label>
+                      <select className="form-control" value={category} onChange={(e) => setCategory(e.target.value)}>
+                        <option value="Family Maintenance">Family Maintenance</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Relative">Relative</option>
+                        <option value="Others">Others</option>
+                      </select>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '4px' }}>Wallet</label>
+                      <select className="form-control" value={wallet} onChange={(e) => setWallet(e.target.value)}>
+                        <option value="Cash">Cash</option>
+                        <option value="Bank">Bank</option>
+                        <option value="Bkash">Bkash</option>
+                        <option value="Nagad">Nagad</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #EAEFEA', paddingTop: '12px', marginTop: '6px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#4A5568' }}>Total Amount</span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#16845B' }}>৳ {totalAmount.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* Items & Prices */}
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Items & Prices</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {rows.map((row, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '10px' }}>
+                        <input type="text" className="form-control" placeholder={`Item ${idx + 1}`} value={row.name} onChange={(e) => handleRowChange(idx, 'name', e.target.value)} style={{ flex: 2 }} />
+                        <input type="number" className="form-control" placeholder="Price" value={row.price} onChange={(e) => handleRowChange(idx, 'price', e.target.value)} style={{ flex: 1 }} />
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={addMoreRow} style={{ marginTop: '10px', background: 'none', border: 'none', color: '#16845B', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+                    + Add More Row
+                  </button>
+                </div>
+
+                {/* Buttons - Save Memo is now Green by using standard btn-submit style */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
+                  <button onClick={handleSaveMemoOnly} className="btn-submit" style={{ flex: 1 }}>
+                    Save Memo
+                  </button>
+                  <button onClick={handleSaveMemoAndExpense} className="btn-submit" style={{ flex: 1, backgroundColor: '#2B6CB0' }}>
+                    Add as Expense
+                  </button>
+                </div>
+
+                {/* Saved Memos */}
+                <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Saved Bazar Memos</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {memos.length === 0 && <p style={{ color: '#718096', fontSize: '13px', textAlign: 'center' }}>No saved memos found.</p>}
+                  {memos.map(memo => (
+                    <div key={memo.id} className="common-box" style={{ marginBottom: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#16845B' }}>{memo.date} ({memo.wallet})</span>
+                        <button onClick={() => deleteMemo(memo.id)} style={{ background: '#FED7D7', color: '#E53E3E', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Delete</button>
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#4A5568', marginBottom: '8px', lineHeight: '1.5' }}>
+                        {memo.items.map((it, i) => <span key={i}>{it.name} (৳{it.price}){i < memo.items.length - 1 ? ', ' : ''}</span>)}
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#102A43', textAlign: 'right' }}>Total: ৳ {memo.total.toLocaleString()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ width: '100%' }}>
+                {/* Notepad Box - Uses the EXACT same class 'common-box' as Bazar Memo */}
+                <div className="common-box">
+                  <input type="text" className="note-input-title" placeholder="Title" value={noteTitle} onChange={(e) => setNoteTitle(e.target.value)} />
+                  <div style={{ fontSize: '12px', color: '#A0AEC0', borderBottom: '1px solid #EAEFEA', paddingBottom: '8px' }}>
+                    {getFormattedDateLabel()} • {(noteTitle + noteContent).length} characters
+                  </div>
+                  <textarea className="note-textarea" placeholder="Start typing..." value={noteContent} onChange={(e) => setNoteContent(e.target.value)}></textarea>
+                  <button onClick={saveNote} className="btn-submit" style={{ marginTop: '8px' }}>
+                    Save Note
+                  </button>
+                </div>
+
+                {/* Saved Notes List */}
+                <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Saved Notes</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {notes.length === 0 && <p style={{ color: '#718096', textAlign: 'center', fontSize: '13px', padding: '15px 0' }}>No notes saved.</p>}
+                  {notes.map(note => (
+                    <div key={note.id} className="common-box" style={{ marginBottom: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43' }}>{note.title}</h4>
+                        <button onClick={() => deleteNote(note.id)} style={{ background: '#FED7D7', border: 'none', color: '#E53E3E', width: '28px', height: '28px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="material-icons" style={{ fontSize: '16px' }}>delete</span>
+                        </button>
+                      </div>
+                      <p style={{ fontSize: '14px', color: '#4A5568', whiteSpace: 'pre-wrap', marginBottom: '10px', lineHeight: '1.5' }}>{note.content}</p>
+                      <div style={{ fontSize: '12px', color: '#A0AEC0', textAlign: 'right' }}>{note.date}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
