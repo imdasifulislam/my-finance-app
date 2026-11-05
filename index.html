@@ -140,6 +140,24 @@
     .loading-sub { font-size: 12px; color: #718096; margin-bottom: 25px; }
     .spinner { width: 38px; height: 38px; border: 4px solid #E5EBE7; border-top: 4px solid #16845B; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* Tab Selector & Memo/Calculator UI Styles */
+.tab-selector { display: flex; background: #E5EBE7; padding: 4px; border-radius: 12px; margin-bottom: 16px; gap: 4px; }
+.tab-btn { flex: 1; padding: 12px 0; text-align: center; font-size: 14px; font-weight: 600; color: #718096; border: none; background: none; border-radius: 9px; cursor: pointer; transition: 0.2s; }
+.tab-btn.active { background: #FFFFFF; color: #16845B; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+.common-box { width: 100%; background: #F8FAF9; padding: 16px; border-radius: 16px; margin-bottom: 16px; border: 1px solid #EAEFEA; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; }
+.note-input-title { width: 100%; border: none; font-size: 20px; font-weight: 700; color: #102A43; outline: none; background: transparent; margin-bottom: 2px; }
+.note-textarea { width: 100%; border: none; font-size: 15px; color: #2D3748; outline: none; background: transparent; resize: none; min-height: 160px; line-height: 1.5; }
+
+/* Calculator Styles */
+.calc-display { width: 100%; background: #102A43; color: #FFFFFF; padding: 20px; border-radius: 16px; text-align: right; margin-bottom: 16px; }
+.calc-screen-sub { font-size: 14px; color: #A0AEC0; min-height: 20px; word-break: break-all; }
+.calc-screen-main { font-size: 32px; font-weight: 800; margin-top: 4px; word-break: break-all; }
+.calc-keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.calc-btn { background: #FFFFFF; border: 1px solid #E5EBE7; padding: 16px 0; border-radius: 14px; font-size: 18px; font-weight: 700; color: #102A43; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.calc-btn.op { background: #EBF8FF; color: #2B6CB0; }
+.calc-btn.action { background: #FFF5F5; color: #D94848; }
+.calc-btn.equal { background: #16845B; color: #FFFFFF; grid-column: span 2; }
+
   </style>
 </head>
 <body>
@@ -355,6 +373,49 @@ React.useEffect(() => {
     'orthogro_guest_exp_cats',
     'orthogro_guest_inc_cats'
   ];
+  // --- Bazar Memo & Notepad States ---
+  const [memoActiveTab, setMemoActiveTab] = React.useState('memo');
+  const [memos, setMemos] = React.useState(() => {
+    const saved = localStorage.getItem('orthogro_all_bazar_memos');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [memoDate, setMemoDate] = React.useState(getTodayDate());
+  const [memoCategory, setMemoCategory] = React.useState('Family Maintenance');
+  const [memoWallet, setMemoWallet] = React.useState('Cash');
+  const [memoRows, setMemoRows] = React.useState([
+    { name: '', price: '' },
+    { name: '', price: '' },
+    { name: '', price: '' }
+  ]);
+  const [notes, setNotes] = React.useState(() => {
+    const saved = localStorage.getItem('orthogro_saved_notes');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [noteTitle, setNoteTitle] = React.useState('');
+  const [noteContent, setNoteContent] = React.useState('');
+
+  // --- Calculator States ---
+  const [calcInput, setCalcInput] = React.useState('');
+  const [calcResult, setCalcResult] = React.useState('0');
+
+  const handleCalcBtn = (val) => {
+    if (val === 'AC') {
+      setCalcInput('');
+      setCalcResult('0');
+    } else if (val === 'DEL') {
+      setCalcInput(prev => prev.slice(0, -1));
+    } else if (val === '=') {
+      try {
+        const sanitized = calcInput.replace(/×/g, '*').replace(/÷/g, '/');
+        const res = eval(sanitized);
+        setCalcResult(String(res));
+      } catch (e) {
+        setCalcResult('Error');
+      }
+    } else {
+      setCalcInput(prev => prev + val);
+    }
+  };
 
   const hasGuestData = guestKeys.some(
     key => localStorage.getItem(key) !== null
@@ -1652,7 +1713,173 @@ if (!currentUser && !isGuest) {
                 {gridOrder.map(key => renderGridByKey(key))}
               </div>
             )}
-            
+                        {/* --- MEMO / NOTEPAD TAB --- */}
+            {activeTab === 'memo' && (
+              <div className="page" style={{ width: '100%' }}>
+                <div className="tab-selector">
+                  <button className={`tab-btn ${memoActiveTab === 'memo' ? 'active' : ''}`} onClick={() => setMemoActiveTab('memo')}>Bazar Memo</button>
+                  <button className={`tab-btn ${memoActiveTab === 'notepad' ? 'active' : ''}`} onClick={() => setMemoActiveTab('notepad')}>Notepad</button>
+                </div>
+
+                {memoActiveTab === 'memo' ? (
+                  <div>
+                    <div className="common-box">
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '4px' }}>Date</label>
+                        <input type="date" className="form-control" value={memoDate} onChange={(e) => setMemoDate(e.target.value)} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '4px' }}>Category</label>
+                          <select className="form-control" value={memoCategory} onChange={(e) => setMemoCategory(e.target.value)}>
+                            {expenseCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '12px', fontWeight: '600', color: '#718096', display: 'block', marginBottom: '4px' }}>Wallet</label>
+                          <select className="form-control" value={memoWallet} onChange={(e) => setMemoWallet(e.target.value)}>
+                            {allAccountOptions.map(acc => <option key={acc} value={acc}>{acc}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #EAEFEA', paddingTop: '12px', marginTop: '6px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: '#4A5568' }}>Total Amount</span>
+                        <span style={{ fontSize: '18px', fontWeight: '800', color: '#16845B' }}>৳ {memoRows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Items & Prices</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {memoRows.map((row, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '10px' }}>
+                            <input type="text" className="form-control" placeholder={`Item ${idx + 1}`} value={row.name} onChange={(e) => {
+                              const updated = [...memoRows];
+                              updated[idx].name = e.target.value;
+                              setMemoRows(updated);
+                            }} style={{ flex: 2 }} />
+                            <input type="number" className="form-control" placeholder="Price" value={row.price} onChange={(e) => {
+                              const updated = [...memoRows];
+                              updated[idx].price = e.target.value;
+                              setMemoRows(updated);
+                            }} style={{ flex: 1 }} />
+                          </div>
+                        ))}
+                      </div>
+                      <button type="button" onClick={() => setMemoRows([...memoRows, { name: '', price: '' }])} style={{ marginTop: '10px', background: 'none', border: 'none', color: '#16845B', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+                        + Add More Row
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
+                      <button onClick={() => {
+                        const valid = memoRows.filter(r => r.name.trim() !== '' && r.price !== '');
+                        if (valid.length === 0) return alert('Please fill at least one item!');
+                        const total = memoRows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+                        setMemos([{ id: Date.now(), date: memoDate, category: memoCategory, wallet: memoWallet, items: valid, total }, ...memos]);
+                        alert('✅ Bazar Memo Saved!');
+                        setMemoRows([{ name: '', price: '' }, { name: '', price: '' }, { name: '', price: '' }]);
+                      }} className="btn-submit" style={{ flex: 1 }}>Save Memo</button>
+
+                      <button onClick={() => {
+                        const valid = memoRows.filter(r => r.name.trim() !== '' && r.price !== '');
+                        if (valid.length === 0) return alert('Please fill at least one item!');
+                        const total = memoRows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+                        const detailedNote = valid.map(i => `${i.name}: ৳${i.price}`).join(', ');
+                        
+                        const newTx = {
+                          id: Date.now(),
+                          title: `Bazar (${memoDate})`,
+                          amount: total,
+                          type: 'expense',
+                          category: memoCategory,
+                          wallet: memoWallet,
+                          date: new Date(memoDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+                          rawDate: memoDate,
+                          resolved: true,
+                          note: detailedNote
+                        };
+                        setTransactions([newTx, ...transactions]);
+                        setMemos([{ id: Date.now(), date: memoDate, category: memoCategory, wallet: memoWallet, items: valid, total }, ...memos]);
+                        alert(`✅ Saved & Added as Expense!\nTotal: ৳ ${total.toLocaleString()}`);
+                        setMemoRows([{ name: '', price: '' }, { name: '', price: '' }, { name: '', price: '' }]);
+                      }} className="btn-submit" style={{ flex: 1, backgroundColor: '#2B6CB0' }}>Add as Expense</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="common-box">
+                      <input type="text" className="note-input-title" placeholder="Title" value={noteTitle} onChange={(e) => setNoteTitle(e.target.value)} />
+                      <div style={{ fontSize: '12px', color: '#A0AEC0', borderBottom: '1px solid #EAEFEA', paddingBottom: '8px' }}>
+                        {getFormattedDateLabel()} • {(noteTitle + noteContent).length} characters
+                      </div>
+                      <textarea className="note-textarea" placeholder="Start typing..." value={noteContent} onChange={(e) => setNoteContent(e.target.value)}></textarea>
+                      <button onClick={(e) => {
+                        e.preventDefault();
+                        if (!noteTitle.trim() && !noteContent.trim()) return;
+                        setNotes([{ id: Date.now(), title: noteTitle.trim() || 'Untitled', content: noteContent.trim(), date: getFormattedDateLabel() }, ...notes]);
+                        setNoteTitle('');
+                        setNoteContent('');
+                        alert('✅ Note Saved!');
+                      }} className="btn-submit" style={{ marginTop: '8px' }}>Save Note</button>
+                    </div>
+
+                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#102A43', marginBottom: '10px' }}>Saved Notes</h4>
+                    {notes.length === 0 && <p style={{ color: '#718096', textAlign: 'center', fontSize: '13px', padding: '15px 0' }}>No notes saved.</p>}
+                    {notes.map(note => (
+                      <div key={note.id} className="common-box" style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                          <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43' }}>{note.title}</h4>
+                          <button onClick={() => setNotes(notes.filter(n => n.id !== note.id))} style={{ background: '#FED7D7', border: 'none', color: '#E53E3E', width: '28px', height: '28px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span className="material-icons" style={{ fontSize: '16px' }}>delete</span>
+                          </button>
+                        </div>
+                        <p style={{ fontSize: '14px', color: '#4A5568', whiteSpace: 'pre-wrap', marginBottom: '10px', lineHeight: '1.5' }}>{note.content}</p>
+                        <div style={{ fontSize: '12px', color: '#A0AEC0', textAlign: 'right' }}>{note.date}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* --- CALCULATOR TAB --- */}
+            {activeTab === 'calculator' && (
+              <div className="page" style={{ width: '100%' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43', marginBottom: '14px' }}>Calculator</h3>
+                <div className="calc-display">
+                  <div className="calc-screen-sub">{calcInput || '0'}</div>
+                  <div className="calc-screen-main">{calcResult}</div>
+                </div>
+                <div className="calc-keypad">
+                  <button className="calc-btn action" onClick={() => handleCalcBtn('AC')}>AC</button>
+                  <button className="calc-btn action" onClick={() => handleCalcBtn('DEL')}>DEL</button>
+                  <button className="calc-btn op" onClick={() => handleCalcBtn('%')}>%</button>
+                  <button className="calc-btn op" onClick={() => handleCalcBtn('÷')}>÷</button>
+                  
+                  <button className="calc-btn" onClick={() => handleCalcBtn('7')}>7</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('8')}>8</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('9')}>9</button>
+                  <button className="calc-btn op" onClick={() => handleCalcBtn('×')}>×</button>
+                  
+                  <button className="calc-btn" onClick={() => handleCalcBtn('4')}>4</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('5')}>5</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('6')}>6</button>
+                  <button className="calc-btn op" onClick={() => handleCalcBtn('-')}>-</button>
+                  
+                  <button className="calc-btn" onClick={() => handleCalcBtn('1')}>1</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('2')}>2</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('3')}>3</button>
+                  <button className="calc-btn op" onClick={() => handleCalcBtn('+')}>+</button>
+                  
+                  <button className="calc-btn" onClick={() => handleCalcBtn('00')}>00</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('0')}>0</button>
+                  <button className="calc-btn" onClick={() => handleCalcBtn('.')}>.</button>
+                  <button className="calc-btn equal" onClick={() => handleCalcBtn('=')}>=</button>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'transactions' && (
               <div className="page">
                 <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#102A43', marginBottom: '14px' }}>{entries[0].id ? 'Edit Transaction' : 'Add New Transaction'}</h3>
@@ -2326,16 +2553,32 @@ if (!currentUser && !isGuest) {
           )}
 
           <nav className="bottom-nav">
-            <button className={activeTab === 'home' ? 'active' : ''} onClick={() => setActiveTab('home')}>
-              <span className="material-icons">home</span>Home
-            </button>
-            <button className="btn-add-tx" onClick={() => { setActiveTab('transactions'); setEntries([{ ...defaultEntry }]); }}>
-              <span className="material-icons">add</span>
-            </button>
-            <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => { setActiveTab('settings'); setSettingsView('menu'); }}>
-              <span className="material-icons">settings</span>Settings
-            </button>
-          </nav>
+  {/* Home Tab */}
+  <button className={activeTab === 'home' ? 'active' : ''} onClick={() => setActiveTab('home')}>
+    <span className="material-icons">home</span>Home
+  </button>
+
+  {/* Memo Tab (নতুন যুক্ত হলো) */}
+  <button className={activeTab === 'memo' ? 'active' : ''} onClick={() => setActiveTab('memo')}>
+    <span className="material-icons">receipt_long</span>Memo
+  </button>
+
+  {/* মাঝখানের ফ্লোটিং প্লাস বাটন */}
+  <button className="btn-add-tx" onClick={() => { setActiveTab('transactions'); setEntries([{ ...defaultEntry }]); }}>
+    <span className="material-icons">add</span>
+  </button>
+
+  {/* Calculator Tab (নতুন যুক্ত হলো) */}
+  <button className={activeTab === 'calculator' ? 'active' : ''} onClick={() => setActiveTab('calculator')}>
+    <span className="material-icons">calculate</span>Calculator
+  </button>
+
+  {/* Settings Tab */}
+  <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => { setActiveTab('settings'); setSettingsView('menu'); }}>
+    <span className="material-icons">settings</span>Settings
+  </button>
+</nav>
+
         </div>
       );
     }
